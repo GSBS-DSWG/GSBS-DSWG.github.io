@@ -29,6 +29,15 @@ h2 {
   padding-bottom: 0.3rem;
 }
 
+.fancy-hr {
+  width: 50%;           /* how long the line is */
+  margin: 2rem auto;    /* vertical spacing + center */
+  border: 0;            /* remove default border */
+  border-top: 2px solid #374151; /* custom line */
+  border-radius: 2px;   /* slightly rounded edges */
+}
+
+
 /* =====================
    NAVBAR
    ===================== */
