@@ -36,7 +36,7 @@ nav: workshops
         <!-- =====================
        Optional YouTube Video
        ===================== -->
-        
+
         <!-- <section class="workshop-video">
             <h2>Workshop Video</h2>
             <div class="video-container">
@@ -54,9 +54,9 @@ nav: workshops
             <h2>Download Materials</h2>
             <div class="download-box">
                 <ul>
-                    
+
                     <li><strong>{{ file.name }}:</strong> {{ file.description }}</li>
-                    
+
                 </ul>
                 <a class="download-btn" href="{{ site.baseurl }}/downloads/workshop-01.zip" download>
                     ⬇ Download Workshop 1 Materials
@@ -70,19 +70,36 @@ nav: workshops
         <section class="workshop-steps">
             <h2>Workshop Steps</h2>
             <ol>
-                
+
                 <li>{{ step }}</li>
-                
+
             </ol>
         </section>
 
     </main>
 
-    <footer>
-        <p><a href="{{ site.baseurl }}/workshops/">← Back to workshops</a></p>
+    <footer class="workshop-footer">
+        <!-- Navigation Links -->
+        <div class="workshop-nav">
+            <div class="nav-links">
+                <!-- Previous Workshop -->
+                <span class="prev-workshop disabled">← No previous workshop</span>
+
+                <!-- Back to All Workshops -->
+                <a class="all-workshops" href="index.html">📋 Back to All Workshops</a>
+
+                <!-- Next Workshop -->
+                <a class="next-workshop" href="workshop-02.html">Next workshop →</a>
+            </div>
+        </div>
+
+        <!-- Horizontal line -->
         <hr class="fancy-hr">
+
+        <!-- Copyright -->
         <p>© 2026 • G&E Data Science Working Group</p>
     </footer>
+
 
 </body>
 

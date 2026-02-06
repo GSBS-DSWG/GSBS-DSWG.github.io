@@ -77,9 +77,26 @@ nav: workshops
 
     </main>
 
-    <footer>
-        <p><a href="{{ site.baseurl }}/workshops/">← Back to workshops</a></p>
+    <footer class="workshop-footer">
+        <!-- Navigation Links -->
+        <div class="workshop-nav">
+            <div class="nav-links">
+                <!-- Previous Workshop -->
+                <span class="prev-workshop"></span>
+                <a class="prev-workshop" href="workshop-05.html">← Previous workshop</a>
+
+                <!-- Back to All Workshops -->
+                <a class="all-workshops" href="index.html">📋 Back to All Workshops</a>
+
+                <!-- Next Workshop -->
+                <span class="next-workshop disabled">Coming Soon →</span>
+            </div>
+        </div>
+
+        <!-- Horizontal line -->
         <hr class="fancy-hr">
+
+        <!-- Copyright -->
         <p>© 2026 • G&E Data Science Working Group</p>
     </footer>
 

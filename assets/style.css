@@ -93,6 +93,65 @@ h2 {
 }
 
 /* =====================
+   FOOTER WORKSHOP NAVBAR
+   ===================== */
+
+.workshop-footer {
+  background: #f9fafb;
+  padding: 1.5rem 2rem;
+  text-align: center;
+}
+
+/* Navigator links */
+.workshop-nav .nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+  margin-bottom: 1rem; /* space above HR */
+}
+
+.workshop-nav .nav-links a {
+  text-decoration: none;
+  color: #2563eb;
+  transition: color 0.2s;
+}
+
+.workshop-nav .nav-links a:hover {
+  color: #1e40af;
+}
+
+.workshop-nav .nav-links .disabled {
+  color: #9ca3af;
+  cursor: default;
+}
+
+/* Horizontal line */
+/* .fancy-hr {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 1rem 0;
+} */
+
+/* Copyright */
+.workshop-footer p {
+  color: #6b7280; /* gray-500 */
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Responsive: stack nav items on small screens */
+@media (max-width: 600px) {
+  .workshop-nav .nav-links {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+
+/* =====================
    MOBILE MENU
    ===================== */
 
