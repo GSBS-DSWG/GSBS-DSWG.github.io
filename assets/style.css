@@ -197,9 +197,62 @@ h2 {
   background: #1d4ed8;
 }
 
-/* Footer */
+/* =====================
+   FOOTER
+   ===================== */
 footer {
   text-align: center;
   padding: 2rem 1rem;
   color: #555;
+}
+
+/* =====================
+   WORKSHOP SECTIONS
+   ===================== */
+/* Workshop sections styling */
+.workshop-overview,
+.workshop-download,
+.workshop-steps,
+.workshop-video {
+  background: #ffffff;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.workshop-overview p,
+.workshop-download p,
+.workshop-download ul,
+.workshop-steps ol {
+  margin: 0.5rem 0;
+}
+
+.workshop-download ul {
+  padding-left: 1.2rem;
+}
+
+.workshop-steps ol {
+  padding-left: 1.2rem;
+}
+
+.workshop-download li {
+  margin-bottom: 0.5rem;
+}
+
+/* Video container for responsive videos */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 ratio */
+  height: 0;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }

@@ -1,0 +1,88 @@
+---
+layout: default
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ page.title }}</title>
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/style.css">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-NB+f0Z3X1+f4..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+{% include navbar.html %}
+
+<header>
+  <h1>{{ page.title }}</h1>
+</header>
+
+<main class="container">
+
+  <!-- =====================
+       Overview Section
+       ===================== -->
+  <section class="workshop-overview">
+    <h2>Overview</h2>
+    <p><strong>Date:</strong> {{ page.date }}</p>
+    <p><strong>Instructor:</strong> {{ page.instructor }}</p>
+    <p>{{ page.overview }}</p>
+  </section>
+
+  <!-- =====================
+       Optional YouTube Video
+       ===================== -->
+  {% if page.youtube %}
+  <section class="workshop-video">
+    <h2>Workshop Video</h2>
+    <div class="video-container">
+      <iframe width="560" height="315"
+              src="{{ page.youtube }}"
+              title="Workshop Video"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+      </iframe>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- =====================
+       Download Section
+       ===================== -->
+  <section class="workshop-download">
+    <h2>Download Materials</h2>
+    <div class="download-box">
+      <ul>
+        {% for file in page.files %}
+        <li><strong>{{ file.name }}:</strong> {{ file.description }}</li>
+        {% endfor %}
+      </ul>
+      <a class="download-btn" href="{{ site.baseurl }}/downloads/{{ page.id }}.zip" download>
+        ⬇ Download All Workshop Materials
+      </a>
+    </div>
+  </section>
+
+  <!-- =====================
+       Steps Section
+       ===================== -->
+  <section class="workshop-steps">
+    <h2>Workshop Steps</h2>
+    <ol>
+      {% for step in page.steps %}
+      <li>{{ step }}</li>
+      {% endfor %}
+    </ol>
+  </section>
+
+</main>
+
+<footer>
+  <p><a href="{{ site.baseurl }}/workshops/">← Back to workshops</a></p>
+  <p>© 2026 • GSBS Data Science Working Group</p>
+</footer>
+
+</body>
+</html>
