@@ -1,4 +1,17 @@
-<nav class="navbar">
+<nav>
+  <ul>
+    <li class="{% if page.nav == 'home' %}active{% endif %}">
+      <a href="{{ site.baseurl }}/index.html">Home</a>
+    </li>
+    <li class="{% if page.nav == 'workshops' %}active{% endif %}">
+      <a href="{{ site.baseurl }}/workshops/index.html">Workshops</a>
+    </li>
+    <li class="{% if page.nav == 'contact' %}active{% endif %}">
+      <a href="{{ site.baseurl }}/contact.html">Contact</a>
+    </li>
+  </ul>
+</nav>
+<!-- <nav class="navbar">
   <div class="nav-container">
     <div class="nav-logo">
       <a href="{{ site.baseurl }}/">G&E DSWG</a>
@@ -28,4 +41,4 @@
       </li>
     </ul>
   </div>
-</nav>
+</nav> -->

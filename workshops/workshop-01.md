@@ -1,5 +1,6 @@
 ---
 layout: workshop
+nav: workshops
 id: workshop-01
 title: "Intro to Data Analysis"
 date: "February 10, 2026"
