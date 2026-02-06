@@ -22,35 +22,63 @@ nav: workshops
 
     <main class="container">
 
-        <section>
+        <!-- =====================
+       Overview Section
+       ===================== -->
+        <section class="workshop-overview">
             <h2>Overview</h2>
-            <p>
-                This workshop introduces basic data analysis workflows,
-                including loading datasets and summarizing variables.
-            </p>
+            <p><strong>Date:</strong> Month DD, 2025</p>
+            <p><strong>Instructor:</strong> Dr. Jake Leighton</p>
+            <p>An introduction to data science and R starting from the foundations.</p>
         </section>
 
-        <section>
-            <h2>Workshop Recording</h2>
+        <!-- =====================
+       Optional YouTube Video
+       ===================== -->
+        
+        <section class="workshop-video">
+            <h2>Workshop Video</h2>
             <div class="video-container">
-                <iframe width="560" height="315" src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
-                    title="Workshop 1 Demo" frameborder="0"
+                <iframe width="560" height="315" src="{{ page.youtube }}" title="Workshop Video" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen>
                 </iframe>
             </div>
         </section>
 
-        <section class="download-box">
+        <!-- =====================
+       Download Section
+       ===================== -->
+        <section class="workshop-download">
             <h2>Download Materials</h2>
-            <a class="download-btn" href="../downloads/workshop-05.zip">
-                ⬇ Download Workshop 5 Materials
-            </a>
+            <div class="download-box">
+                <ul>
+                    
+                    <li><strong>{{ file.name }}:</strong> {{ file.description }}</li>
+                    
+                </ul>
+                <a class="download-btn" href="{{ site.baseurl }}/downloads/workshop-05.zip" download>
+                    ⬇ Download Workshop 5 Materials
+                </a>
+            </div>
+        </section>
+
+        <!-- =====================
+       Steps Section
+       ===================== -->
+        <section class="workshop-steps">
+            <h2>Workshop Steps</h2>
+            <ol>
+                
+                <li>{{ step }}</li>
+                
+            </ol>
         </section>
 
     </main>
 
     <footer>
+        <p><a href="{{ site.baseurl }}/workshops/">← Back to workshops</a></p>
         <hr class="fancy-hr">
         <p>© 2026 • G&E Data Science Working Group</p>
     </footer>
