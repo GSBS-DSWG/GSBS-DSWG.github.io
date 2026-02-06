@@ -135,24 +135,45 @@ h2 {
 /* =====================
    WORKSHOP LIST
    ===================== */
-
 .workshop-list {
   list-style: none;
   padding: 0;
 }
 
 .workshop-list li {
-  margin: 0.75rem 0;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.workshop-list a {
+.workshop-list li:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.workshop-list li a {
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1.1rem;
   color: #2563eb;
 }
 
-.workshop-list a:hover {
+.workshop-list li a:hover {
   text-decoration: underline;
+}
+
+.workshop-list .instructor {
+  font-style: italic;
+  color: #555;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.workshop-list .blurb {
+  margin: 0;
+  color: #333;
 }
 
 /* Download box */

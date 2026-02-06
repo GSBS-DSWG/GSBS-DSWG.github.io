@@ -1,0 +1,951 @@
+# R Mini Bootcamp: Beginner-level Focus
+
+### R Mini Bootcamp Practice Assignment - Solutions
+
+#### Jake Leighton - G&E Data Science Working Group
+
+Adapted from MDACC DPLM Computational Training Program
+Shared for educational use as part of this workshop
+
+#### February 5th, 2026
+
+# 1 Welcome!
+
+This document contains **complete solutions** for the 'R Mini Bootcamp: Beginner-level Focus' Practice Assignment.
+
+**How to use this document:**
+
+1.  Try each exercise on your own first
+2.  If you get stuck, look at the solution
+3.  Run the code yourself to see how it works
+4.  Experiment by changing values and re-running
+
+Don't worry if things don't work perfectly the first time - that's how we all learn!
+
+# 2 Setup: Load Required Packages
+
+Before we begin, let's load the tidyverse package. This gives us access to all the tools we'll need.
+
+```{r}
+# Load tidyverse (includes dplyr, ggplot2, readr, and more)
+library(tidyverse)
+
+# Set seed for reproducibility
+set.seed(42)
+```
+
+# 3 Exercise 1: Practice with Vectors
+
+**Goal:** Learn to create different types of vectors in R.
+
+Vectors are the most basic data structure in R. Think of them as a simple list of items that are all the same type.
+
+## 3.1 1a. Numeric Vector: Daily Weights of a Chick
+
+Let's create a vector with a chick's weight (in grams) measured each day for one week.
+
+```{r}
+# Create a numeric vector with 7 values (one for each day)
+# We use c() to combine multiple values into a vector
+daily_weights <- c(42, 45, 48, 53, 58, 64, 71)
+
+# Let's look at what we created
+daily_weights
+```
+
+```{r}
+# We can also name each value to make it clearer
+names(daily_weights) <- c("Day1", "Day2", "Day3", "Day4", "Day5", "Day6", "Day7")
+
+# Now when we print it, we see the names too
+daily_weights
+```
+
+```{r}
+# What type of vector is this?
+class(daily_weights)
+```
+
+**What we learned:**
+
+-   `c()` combines values into a vector
+-   `names()` can label each element
+-   `class()` tells us the data type
+
+## 3.2 1b. Character Vector: Names of Diets
+
+Character vectors store text (also called "strings").
+
+```{r}
+# Create a character vector with diet names
+# Notice we put text in quotation marks
+diet_names <- c("Standard Chow", "High Protein", "Low Fat", "Organic")
+
+# Look at our vector
+diet_names
+```
+
+```{r}
+# What type of vector is this?
+class(diet_names)
+```
+
+```{r}
+# How many diets do we have?
+length(diet_names)
+```
+
+**What we learned:**
+
+-   Text values need quotation marks
+-   `length()` tells us how many items are in a vector
+
+## 3.3 1c. Logical Vector: Quality Control Results
+
+Logical vectors contain only TRUE or FALSE values.
+
+```{r}
+# Create a logical vector for whether each measurement passed QC
+# TRUE = passed, FALSE = failed
+passed_qc <- c(TRUE, TRUE, FALSE, TRUE, TRUE, FALSE, TRUE)
+
+# Look at our vector
+passed_qc
+```
+
+```{r}
+# What type is it?
+class(passed_qc)
+```
+
+```{r}
+# How many passed? (TRUE counts as 1, FALSE counts as 0)
+sum(passed_qc)
+```
+
+```{r}
+# How many failed?
+sum(!passed_qc)  # The ! means "not" - so this counts the FALSEs
+```
+
+**What we learned:**
+
+-   Logical vectors use TRUE and FALSE (no quotes, all capitals)
+-   `sum()` on a logical vector counts the TRUEs
+-   `!` means "not" and flips TRUE to FALSE
+
+# 4 Exercise 2: Explore the DNase Dataset
+
+**Goal:** Learn to investigate a built-in dataset.
+
+R comes with many practice datasets built in. DNase contains data from an ELISA assay measuring DNase activity.
+
+## 4.1 2a. What is the DNase dataset?
+
+```{r}
+# First, let's learn about this dataset
+?DNase  # This opens the help file (run in RStudio to see it)
+
+# Look at the first few rows
+head(DNase)
+```
+
+```{r}
+# Look at the last few rows
+tail(DNase)
+```
+
+## 4.2 2b. Find the Dimensions
+
+```{r}
+# How many rows and columns?
+dim(DNase)
+```
+
+```{r}
+# Another way to see this:
+nrow(DNase)  # Number of rows
+```
+
+```{r}
+ncol(DNase)  # Number of columns
+```
+
+```{r}
+# Or use a summary view
+glimpse(DNase)
+```
+
+**The dataset has 176 rows and 3 columns.**
+
+## 4.3 2c. Identify Column Types
+
+```{r}
+# See structure of the data
+str(DNase)
+```
+
+```{r}
+# Let's examine each column individually
+class(DNase$Run)       # Run identifier
+```
+
+```{r}
+class(DNase$conc)      # Concentration of DNase
+```
+
+```{r}
+class(DNase$density)   # Optical density (the measurement)
+```
+
+**Column types explained:**
+
+-   `Run` is an "ordered factor" - a categorical variable with a specific order (Run 1, 2, 3, etc.)
+-   `conc` is "numeric" - numbers with decimals
+-   `density` is "numeric" - the actual measurements
+
+## 4.4 2d. Calculate Summary Statistics
+
+```{r}
+# Get a quick summary of all columns
+summary(DNase)
+```
+
+```{r}
+# Calculate specific statistics for density
+mean(DNase$density)      # Average
+```
+
+```{r}
+median(DNase$density)    # Middle value
+```
+
+```{r}
+sd(DNase$density)        # Standard deviation (spread)
+```
+
+```{r}
+min(DNase$density)       # Smallest value
+```
+
+```{r}
+max(DNase$density)       # Largest value
+```
+
+```{r}
+range(DNase$density)     # Min and max together
+```
+
+## 4.5 2e. Extract Interesting Subsets
+
+```{r}
+# Get all measurements where concentration is greater than 5
+high_conc <- DNase[DNase$conc > 5, ]
+head(high_conc)
+```
+
+```{r}
+# Get measurements from Run 1 only
+run1_data <- DNase[DNase$Run == 1, ]
+head(run1_data)
+```
+
+```{r}
+# Get measurements with high density (above 1.0)
+high_density <- DNase[DNase$density > 1.0, ]
+head(high_density)
+```
+
+```{r}
+# Combine conditions: Run 1 AND density > 0.5
+run1_high <- DNase[DNase$Run == 1 & DNase$density > 0.5, ]
+run1_high
+```
+
+# 5 Exercise 3: Create a Personal Data Frame
+
+**Goal:** Practice building your own data frame.
+
+A data frame is like a spreadsheet in R - it has rows and columns of data.
+
+## 5.1 Example: Lab Experiment Data
+
+Let's create a data frame tracking tumor samples in an experiment.
+
+```{r}
+# Create a data frame with 4 columns and 6 rows
+tumor_samples <- data.frame(
+  # Column 1: Sample ID (character)
+  sample_id = c("TUM001", "TUM002", "TUM003", "TUM004", "TUM005", "TUM006"),
+  
+  # Column 2: Tumor type (character)
+  tumor_type = c("NSCLC", "NSCLC", "Breast", "Colon", "Breast", "NSCLC"),
+  
+  # Column 3: Tumor volume in cubic mm (numeric)
+  volume_mm3 = c(125, 89, 156, 203, 67, 145),
+  
+  # Column 4: Treatment response (logical)
+  responded = c(TRUE, TRUE, FALSE, FALSE, TRUE, TRUE)
+)
+
+# Look at our data frame
+tumor_samples
+```
+
+```{r}
+# Check the structure
+str(tumor_samples)
+```
+
+```{r}
+# Get summary statistics
+summary(tumor_samples)
+```
+
+## 5.2 Explore Your Data Frame
+
+```{r}
+# Access a single column with $
+tumor_samples$volume_mm3
+```
+
+```{r}
+# Get the average volume
+mean(tumor_samples$volume_mm3)
+```
+
+```{r}
+# How many samples responded to treatment?
+sum(tumor_samples$responded)
+```
+
+```{r}
+# What percentage responded?
+mean(tumor_samples$responded) * 100  # Multiplying by 100 gives us a percentage
+```
+
+# 6 Exercise 4: Challenge - Filter ChickWeight
+
+**Goal:** Find all chicks with weight \> 200 AND Time \> 10.
+
+This exercise combines two conditions using the `&` operator (AND).
+
+## 6.1 Solution Using Base R
+
+```{r}
+# Load the ChickWeight dataset (it's built into R)
+data(ChickWeight)
+
+# Method 1: Using bracket notation
+heavy_late_chicks <- ChickWeight[ChickWeight$weight > 200 & ChickWeight$Time > 10, ]
+
+# How many rows did we find?
+nrow(heavy_late_chicks)
+```
+
+```{r}
+# Look at the results
+head(heavy_late_chicks)
+```
+
+```{r}
+# Look at all unique chick numbers that met our criteria
+unique(heavy_late_chicks$Chick)
+```
+
+## 6.2 Solution Using dplyr (Easier to Read!)
+
+```{r}
+# Using filter() from dplyr - much cleaner!
+heavy_late_chicks_dplyr <- ChickWeight %>%
+  filter(weight > 200, Time > 10)
+
+# Same result
+nrow(heavy_late_chicks_dplyr)
+```
+
+```{r}
+# Let's see a summary
+heavy_late_chicks_dplyr %>%
+  summarize(
+    num_observations = n(),
+    num_unique_chicks = n_distinct(Chick),
+    avg_weight = mean(weight),
+    min_weight = min(weight),
+    max_weight = max(weight)
+  )
+```
+
+# 7 Exercise 5: Data Import/Export
+
+**Goal:** Practice saving and loading CSV files.
+
+## 7.1 Step 1: Create and Save a Subset
+
+```{r}
+# Create a subset: Chicks on Diet 1 only
+diet1_chicks <- ChickWeight %>%
+  filter(Diet == 1)
+
+# See how many rows we have
+nrow(diet1_chicks)
+```
+
+```{r}
+# Save to a CSV file
+# Note: In RStudio, this saves to your working directory
+write_csv(diet1_chicks, "diet1_chicks.csv")
+
+# Confirm it was created
+file.exists("diet1_chicks.csv")
+```
+
+## 7.2 Step 2: Import and Explore
+
+```{r}
+# Read the CSV file back into R
+diet1_imported <- read_csv("diet1_chicks.csv")
+
+# Did it work? Let's check
+head(diet1_imported)
+```
+
+```{r}
+# Compare dimensions - should be the same
+dim(diet1_imported)
+```
+
+```{r}
+dim(diet1_chicks)
+```
+
+## 7.3 Step 3: Clean and Export Again
+
+```{r}
+# Let's "clean" our data by:
+# 1. Removing any rows with missing values
+# 2. Keeping only chicks that reached weight > 100
+
+diet1_cleaned <- diet1_imported %>%
+  # Remove rows with any NA values
+  drop_na() %>%
+  # Keep only observations where weight > 100
+  filter(weight > 100)
+
+# How many rows now?
+nrow(diet1_cleaned)
+```
+
+```{r}
+# Save the cleaned version
+write_csv(diet1_cleaned, "diet1_cleaned.csv")
+
+# Verify it exists
+file.exists("diet1_cleaned.csv")
+```
+
+# 8 Exercise 6: Master the Core dplyr Verbs
+
+**Goal:** Practice each verb at least 5 times.
+
+The five core dplyr verbs are:
+
+-   `select()` - choose columns
+-   `filter()` - choose rows
+-   `mutate()` - create new columns
+-   `arrange()` - sort rows
+-   `summarize()` - calculate summaries
+
+## 8.1 SELECT: Choose Columns
+
+```{r}
+# Practice 1: Select just the Chick column
+ChickWeight %>% 
+  select(Chick) %>%
+  head()
+```
+
+```{r}
+# Practice 2: Select Chick and weight
+ChickWeight %>% 
+  select(Chick, weight) %>%
+  head()
+```
+
+```{r}
+# Practice 3: Select everything EXCEPT Time
+ChickWeight %>% 
+  select(-Time) %>%
+  head()
+```
+
+```{r}
+# Practice 4: Select columns that start with a certain letter
+ChickWeight %>% 
+  select(starts_with("T")) %>%
+  head()
+```
+
+```{r}
+# Practice 5: Select columns in a range (from weight to Diet)
+ChickWeight %>% 
+  select(weight:Diet) %>%
+  head()
+```
+
+## 8.2 FILTER: Choose Rows
+
+```{r}
+# Practice 1: Filter for Diet 4
+ChickWeight %>% filter(Diet == 4)
+```
+
+```{r}
+# Practice 2: Filter for weight greater than 300
+ChickWeight %>% filter(weight > 300)
+```
+
+```{r}
+# Practice 3: Filter for Time equals 21 and weight under 200
+ChickWeight %>% filter(Time == 21, weight < 200)
+```
+
+```{r}
+# Practice 4: Filter for Chick number 1 (OR) number 3
+ChickWeight %>% filter(Chick == 1 | Chick == 3)
+```
+
+```{r}
+# Practice 5: Filter using multiple conditions (AND)
+ChickWeight %>% filter(Diet == 1, Time == 21, weight > 150)
+```
+
+## 8.3 MUTATE: Create New Columns
+
+```{r}
+# Practice 1: Create weight in pounds
+ChickWeight %>% 
+  mutate(weight_lbs = weight*0.0022) %>%
+  head()
+```
+
+```{r}
+# Practice 2: Create a weight category
+ChickWeight %>% 
+  mutate(size = if_else(weight > 100, "Large", "Small")) %>%
+  head()
+```
+
+```{r}
+# Practice 3: Create Time in hours (assuming days)
+ChickWeight %>% 
+  mutate(time_hours = Time * 24) %>%
+  head()
+```
+
+```{r}
+# Practice 4: Create weight squared (for statistical models)
+ChickWeight %>% 
+  mutate(weight_squared = weight^2) %>%
+  head()
+```
+
+```{r}
+# Practice 5: Create multiple columns at once
+ChickWeight %>% mutate(
+  weight_kg = weight / 1000,
+  weight_oz = weight * 0.035,
+  is_heavy = weight > 200
+) %>%
+  head()
+```
+
+## 8.4 ARRANGE: Sort Rows
+
+```{r}
+# Practice 1: Sort by Time (oldest to newest measurements)
+ChickWeight %>% 
+  arrange(Time) %>%
+  head()
+```
+
+```{r}
+# Practice 2: Sort by Chick, then by Time (see one chick's growth trajectory)
+ChickWeight %>% 
+  arrange(Chick, Time) %>%
+  head()
+```
+
+```{r}
+# Practice 3: Sort by Diet (descending), then by Chick
+ChickWeight %>% 
+  arrange(desc(Diet), Chick) %>%
+  head()
+```
+
+```{r}
+# Practice 4: Sort by weight within each Diet (ascending Diet, descending weight)
+ChickWeight %>% 
+  arrange(Diet, desc(weight)) %>%
+  tail()
+```
+
+```{r}
+# Practice 5: Sort by Time (descending) to see final measurements first
+ChickWeight %>% 
+  arrange(desc(Time), Chick) %>%
+  head()
+```
+
+## 8.5 SUMMARIZE: Calculate Summary Statistics
+
+```{r}
+# Practice 1: Calculate total weight across all observations
+ChickWeight %>% summarize(total_weight = sum(weight))
+```
+
+```{r}
+# Practice 2: Count unique time points and diets
+ChickWeight %>% summarize(
+  n_timepoints = n_distinct(Time),
+  n_diets = n_distinct(Diet)
+)
+```
+
+```{r}
+# Practice 3: Calculate the coefficient of variation (CV)
+ChickWeight %>% summarize(
+  cv_weight = sd(weight) / mean(weight) * 100
+)
+```
+
+```{r}
+# Practice 4: Find first and last weight recorded (by row order)
+ChickWeight %>% summarize(
+  first_weight = first(weight),
+  last_weight = last(weight)
+)
+```
+
+```{r}
+# Practice 5: Calculate IQR (interquartile range) and quartiles
+ChickWeight %>% summarize(
+  q1_weight = quantile(weight, 0.25),
+  q3_weight = quantile(weight, 0.75),
+  iqr_weight = IQR(weight)
+)
+```
+
+## 8.6 Combining Verbs in Different Orders
+
+```{r}
+# Example 1: Filter then summarize
+ChickWeight %>%
+  filter(Diet == 1) %>%
+  summarize(avg_weight = mean(weight))
+```
+
+```{r}
+# Example 2: Select, filter, then arrange
+ChickWeight %>%
+  select(Chick, Time, weight) %>%
+  filter(Time == 21) %>%
+  arrange(desc(weight))
+```
+
+```{r}
+# Example 3: Mutate, then filter, then select
+ChickWeight %>%
+  mutate(is_heavy = weight > 200) %>%
+  filter(is_heavy == TRUE) %>%
+  select(Chick, weight, Diet)
+```
+
+# 9 Exercise 7: Data Cleaning Challenge
+
+**Goal**: Create messy data and clean it up.
+
+## 9.1 Step 1: Create Messy Data (5+ issues)
+
+```{r}
+# Let's create a realistically messy dataset
+messy_data <- data.frame(
+  patient_id = c("P001", "p002", "P003", "P-004", "P005", NA),    # Issue 1: Inconsistent IDs, missing value
+  age = c(45, 52, -3, 67, 200, 38),                               # Issue 2: Impossible values (-3, 200)
+  sex = c("Male", "female", "MALE", "F", "Male", "m"),            # Issue 3: Inconsistent categories
+  tumor_size = c("2.5cm", "3.1 cm", "4cm", "2.8", "3.5cm", "NA"), # Issue 4: Mixed formats, "NA" as text
+  treatment = c("Chemo", "Chemo", " Surgery", "Surgery ", "chemo", "Radiation"),  # Issue 5: Extra spaces, inconsistent capitalization
+  stringsAsFactors = FALSE
+)
+
+# Look at our messy data
+messy_data
+```
+
+## 9.2 Step 2: Clean All Issues
+
+```{r}
+# Clean the data step by step
+clean_data <- messy_data %>%
+  # Issue 1: Fix patient IDs - make uppercase and remove hyphens
+  mutate(patient_id = str_to_upper(patient_id)) %>%
+  mutate(patient_id = str_replace(patient_id, "-", "")) %>%
+  
+  # Issue 2: Replace impossible ages with NA
+  # Normal ages are between 0 and 120
+  mutate(age = if_else(age < 0 | age > 120, NA_real_, age)) %>%
+  
+  # Issue 3: Standardize sex column
+  mutate(sex = str_to_lower(sex)) %>%
+  mutate(sex = case_when(
+    sex %in% c("male", "m") ~ "Male",
+    sex %in% c("female", "f") ~ "Female",
+    TRUE ~ NA_character_
+  )) %>%
+  
+  # Issue 4: Clean tumor size - extract just the number
+  mutate(tumor_size = str_replace(tumor_size, "cm", "")) %>%  # Remove "cm"
+  mutate(tumor_size = str_trim(tumor_size)) %>%               # Remove extra spaces
+  mutate(tumor_size = na_if(tumor_size, "NA")) %>%            # Convert "NA" text to real NA
+  mutate(tumor_size = as.numeric(tumor_size)) %>%             # Convert to number
+  
+  # Issue 5: Clean treatment - trim spaces and standardize
+  mutate(treatment = str_trim(treatment)) %>%
+  mutate(treatment = str_to_title(treatment)) %>%
+  
+  # Remove rows with missing patient IDs
+  filter(!is.na(patient_id))
+
+# Compare before and after
+print("BEFORE cleaning:")
+```
+
+```{r}
+messy_data
+```
+
+```{r}
+print("AFTER cleaning:")
+```
+
+```{r}
+clean_data
+```
+
+## 9.2 Summary of Cleaning Functions Used
+
+| Issue                   | Function Used                                        | What It Does                          |
+|-------------------------|------------------------------------------------------|---------------------------------------|
+| Inconsistent case       | `str_to_upper()`, `str_to_lower()`, `str_to_title()` | Standardizes capitalization           |
+| Extra spaces            | `str_trim()`                                         | Removes leading/trailing spaces       |
+| Invalid values          | `if_else()` with condition                           | Replaces bad values with NA           |
+| “NA” as text            | `na_if()`                                            | Converts text “NA” to real NA         |
+| Inconsistent categories | `case_when()`                                        | Maps multiple values to standard ones |
+| Remove characters       | `str_replace()`                                      | Finds and replaces text patterns      |
+
+# 10 Exercise 8: Group Operations
+
+**Goal:** Calculate statistics by groups.
+
+## 10.1 8a. Mean Weight by Diet and Time
+
+```{r}
+# Calculate mean weight for each combination of Diet and Time
+weight_by_diet_time <- ChickWeight %>%
+  group_by(Diet, Time) %>%
+  summarize(
+    mean_weight = mean(weight),
+    sd_weight = sd(weight),
+    n_chicks = n(),
+    .groups = "drop"  # This removes the grouping after summarizing
+  )
+
+# Look at the first few rows
+head(weight_by_diet_time, 12)
+```
+
+```{r}
+# Let's also see the final timepoint (Day 21) by diet
+weight_by_diet_time %>%
+  filter(Time == 21)
+```
+
+## 10.2 8b. Find the Heaviest Chick in Each Diet
+
+```{r}
+# Method 1: Using slice_max()
+heaviest_by_diet <- ChickWeight %>%
+  group_by(Diet) %>%
+  slice_max(weight, n = 1) %>%  # Get the row with maximum weight in each group
+  ungroup()
+
+heaviest_by_diet
+```
+
+```{r}
+# Method 2: Using filter() with max()
+ChickWeight %>%
+  group_by(Diet) %>%
+  filter(weight == max(weight)) %>%
+  ungroup()
+```
+
+## 10.3 Bonus: Additional Group Operations
+
+```{r}
+# Find the chick with the most growth (difference between first and last weight)
+growth_by_chick <- ChickWeight %>%
+  group_by(Chick, Diet) %>%
+  summarize(
+    start_weight = first(weight),
+    end_weight = last(weight),
+    total_growth = last(weight) - first(weight),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_growth))
+
+# Top 5 fastest growing chicks
+head(growth_by_chick, 5)
+```
+
+```{r}
+# Average growth by diet
+growth_by_chick %>%
+  group_by(Diet) %>%
+  summarize(
+    avg_growth = mean(total_growth),
+    best_growth = max(total_growth)
+  )
+```
+
+# 11 Exercise 9: Pipeline Practice
+
+**Goal:** Create a pipeline with 6+ operations chained together.
+
+## 11.1 The Big Pipeline
+
+```{r}
+# A comprehensive analysis pipeline with 8 operations
+final_analysis <- ChickWeight %>%
+  
+  # Step 1: FILTER - Keep only observations after day 10
+  filter(Time > 10) %>%
+  
+  # Step 2: MUTATE - Create new columns for analysis
+  mutate(
+    weight_kg = weight / 1000,           # Convert to kg
+    size_category = case_when(           # Categorize by size
+      weight < 100 ~ "Small",
+      weight < 200 ~ "Medium",
+      TRUE ~ "Large"
+    )
+  ) %>%
+  
+  # Step 3: SELECT - Keep only the columns we need
+  select(Chick, Diet, Time, weight, weight_kg, size_category) %>%
+  
+  # Step 4: GROUP BY - Prepare for grouped calculations
+  group_by(Diet, size_category) %>%
+  
+  # Step 5: SUMMARIZE - Calculate statistics by group
+  summarize(
+    n_observations = n(),
+    n_chicks = n_distinct(Chick),
+    avg_weight = mean(weight),
+    max_weight = max(weight),
+    .groups = "drop"
+  ) %>%
+  
+  # Step 6: ARRANGE - Sort the results
+  arrange(Diet, desc(avg_weight)) %>%
+  
+  # Step 7: MUTATE - Add percentage column
+  mutate(pct_of_total = n_observations / sum(n_observations) * 100) %>%
+  
+  # Step 8: FILTER - Show only groups with at least 5 observations
+  filter(n_observations >= 5)
+
+# View our final result
+final_analysis
+```
+
+## 11.2 Breaking Down What Each Step Does
+
+```{r}
+# Let's see what happens at each step
+
+# Start: How many rows?
+cat("Original data:", nrow(ChickWeight), "rows\n")
+```
+
+```{r}
+# After Step 1 (filter Time > 10):
+step1 <- ChickWeight %>% filter(Time > 10)
+cat("After filtering Time > 10:", nrow(step1), "rows\n")
+```
+
+```{r}
+# After Step 2 (mutate):
+step2 <- step1 %>% 
+  mutate(
+    weight_kg = weight / 1000,
+    size_category = case_when(
+      weight < 100 ~ "Small",
+      weight < 200 ~ "Medium",
+      TRUE ~ "Large"
+    )
+  )
+cat("After mutate:", nrow(step2), "rows (same, just added columns)\n")
+```
+
+```{r}
+cat("New columns:", setdiff(names(step2), names(step1)), "\n")
+```
+
+```{r}
+# After Step 3 (select):
+step3 <- step2 %>% select(Chick, Diet, Time, weight, weight_kg, size_category)
+cat("After select:", ncol(step3), "columns kept\n")
+```
+
+```{r}
+# Steps 4-5 (group_by + summarize) reduce to summary table
+# Steps 6-8 (arrange, mutate, filter) refine the output
+```
+
+# 12 Congratulations!
+
+You’ve completed all the practice exercises! Here’s a quick review of what you learned:
+
+| Skill             | Functions Used                                  |
+|-------------------|-------------------------------------------------|
+| Creating vectors  | `c()`, `names()`                                |
+| Exploring data    | `dim()`, `str()`, `summary()`, `glimpse()`      |
+| Import/Export     | `read_csv()`, `write_csv()`                     |
+| Selecting columns | `select()`                                      |
+| Filtering rows    | `filter()`                                      |
+| Creating columns  | `mutate()`                                      |
+| Sorting           | `arrange()`, `desc()`                           |
+| Summarizing       | `summarize()`, `n()`, `mean()`, `sd()`          |
+| Grouping          | `group_by()`, `ungroup()`                       |
+| Cleaning strings  | `str_trim()`, `str_to_upper()`, `str_replace()` |
+| Handling NAs      | `na_if()`, `drop_na()`, `is.na()`               |
+| Pipelines         | `%>%` (pipe operator)                           |
+
+# 12.1 Next Steps
+
+1.  **Practice more!** The best way to learn is by doing
+
+2.  **Experiment** - change values in the code and see what happens
+
+3.  **Ask questions** - if something doesn’t make sense, ask!
+
+4.  **Bring your own data** - try these techniques on real datasets
+
+# 13 Session Info
+
+For reproducibility, here's the R environment used:
+
+```{r}
+sessionInfo()
+```
