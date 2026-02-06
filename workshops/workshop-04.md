@@ -1,11 +1,11 @@
 ---
 layout: workshop
-id: workshop-01
+id: workshop-04
 title: "Intro to Data Analysis"
 date: "February 10, 2026"
 instructor: "Dr. Alice Smith"
 overview: "This workshop introduces the basics of data analysis, including exploring datasets, summarizing variables, and creating visualizations. It is intended for students who want hands-on practice with Python and R."
-#youtube: "https://www.youtube.com/embed/YOUR_VIDEO_ID" # optional; remove if no video
+youtube: "https://www.youtube.com/embed/YOUR_VIDEO_ID" # optional; remove if no video
 files:
   - name: "workshop-01-data.csv"
     description: "Raw dataset used for exercises in this workshop."
