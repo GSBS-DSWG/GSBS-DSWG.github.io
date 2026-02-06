@@ -1,13 +1,10 @@
----
-layout: default
----
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>{{ page.title }}</title>
-    <link rel="stylesheet" href="{{ site.baseurl }}/assets/style.css">
+    <title>title</title>
+    <link rel="stylesheet" href="../assets/style.css">
     <!-- Font Awesome for icons -->
     <link rel="icon" type="image/png" href="../assets/dna_icon1.png">
 </head>
@@ -17,7 +14,8 @@ layout: default
     {% include navbar.html %}
 
     <header>
-        <h1>{{ page.title }}</h1>
+        <h1>Workshop 1: Single-cell RNA-seq</h1>
+        <p>Learn the basics of analyzing single-cell RNA-sequencing data.</p>
     </header>
 
     <main class="container">
@@ -27,15 +25,15 @@ layout: default
        ===================== -->
         <section class="workshop-overview">
             <h2>Overview</h2>
-            <p><strong>Date:</strong> {{ page.date }}</p>
-            <p><strong>Instructor:</strong> {{ page.instructor }}</p>
+            <p><strong>Date:</strong>data</p>
+            <p><strong>Instructor:</strong>Dr. Anna Casasent</p>
             <p>{{ page.overview }}</p>
         </section>
 
         <!-- =====================
        Optional YouTube Video
        ===================== -->
-        {% if page.youtube %}
+        
         <section class="workshop-video">
             <h2>Workshop Video</h2>
             <div class="video-container">
@@ -45,7 +43,6 @@ layout: default
                 </iframe>
             </div>
         </section>
-        {% endif %}
 
         <!-- =====================
        Download Section
@@ -54,11 +51,11 @@ layout: default
             <h2>Download Materials</h2>
             <div class="download-box">
                 <ul>
-                    {% for file in page.files %}
+                    
                     <li><strong>{{ file.name }}:</strong> {{ file.description }}</li>
-                    {% endfor %}
+                    
                 </ul>
-                <a class="download-btn" href="{{ site.baseurl }}/downloads/{{ page.id }}.zip" download>
+                <a class="download-btn" href="{{ site.baseurl }}/downloads/workshop-01.zip" download>
                     ⬇ Download All Workshop Materials
                 </a>
             </div>
@@ -70,9 +67,9 @@ layout: default
         <section class="workshop-steps">
             <h2>Workshop Steps</h2>
             <ol>
-                {% for step in page.steps %}
+                
                 <li>{{ step }}</li>
-                {% endfor %}
+                
             </ol>
         </section>
 
