@@ -1,0 +1,728 @@
+---
+title: "R Mini Bootcamp - Intermediate"
+author: "Aislyn Schalck"
+date: "2026-02-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Introduction
+
+This workshop was made to follow the Beginner R workshop given by Jake Leighton and uses the same built-in data sets. The main focus is on how to perform basic statistical tests in R (though not the statistical reasoning/interpretation behind them) and how to plot data with ggplot.  
+
+After completing this workshop you should have:
+1. A basic understanding of how to put data into statistical functions and extract the results. 
+2. A basic understanding of the elements of creating a ggplot graphic
+3. Resources to find additional statistical tests and custom plots
+
+## Workshop
+
+### Getting Started
+
+```{r}
+#if you have not yet done so, install the tidyverse
+#this can take a while, it has a lot of dependencies
+#install.packages("tidyverse")
+
+#if you have not yet done so, install rstatix
+#It should install quickly
+#install.packages("rstatix")
+```
+
+```{r}
+#load the required packages for the workshop
+library(tidyverse)
+library(datasets)
+library(rstatix)
+```
+
+```{r}
+#This workshop uses the built-in ChickWeight dataset. It was chosen because it is very analygous to the data from a mouse study.
+head(ChickWeight)
+```
+
+
+### Statistical Tests in R
+
+The R programming language was developed specifically for statisticians to analyze data and perform statistical tests. Because of this, it's very easy to perform statistics in R presuming you know what test you would like.
+
+#### two-sample t.test
+
+From the ChickWeight dataset, you want to test for a difference in means between the Diet 1 and Diet 2 Chicks at day 21. This would be an unpaired, two-sample t.test.
+
+```{r}
+#First get the diet 1, day 21 wight data and save it to diet1.day21
+#keep the chick name
+diet1.day21 <- ChickWeight %>% filter(Time==21) %>% filter(Diet==1) %>% pull(weight,name = Chick)
+diet1.day21
+```
+
+```{r}
+#Then get the diet 2, day 21 wight data and save it to diet2.day21
+diet2.day21 <- ChickWeight %>% filter(Time==21) %>% filter(Diet==2) %>% pull(weight,name = Chick)
+diet2.day21
+```
+
+R stores most statistical tests in a list-based object called an "htest."
+
+```{r}
+#By default, t.tests performs a two-sided, unpaired t.test with a 95% confidence level.
+diet.day21.ttest = t.test(x = diet1.day21, y = diet2.day21)
+diet.day21.ttest
+```
+
+Because we saved the test object, we can extract several key test values by name
+
+```{r}
+#For example the t statistic
+t <- diet.day21.ttest$statistic
+t
+
+#The p.value
+p <- diet.day21.ttest$p.value
+p
+```
+
+```{r}
+#QUESTION: How would you extract the mean of x from the test object?
+```
+
+
+You can adjust the test defaults by specifying several options.
+
+```{r}
+#For example, the syntax to specify the (one-sided) alternative hypothesis is that the mean of x is less than the mean of y
+t.test(x = diet1.day21, y = diet2.day21, alternative = "less")
+```
+
+#### one-sample t.test
+
+What if you want to test if the mean weight for diet 1, on day 21 is significantly different than 200? For a one-sided test, you simply give the test only an argument for x. 
+
+```{r}
+#by default mu=0, but here we set it to 200, per the problem. 
+t.test(x = diet1.day21, mu = 200)
+```
+
+#### t.test in the pipe
+
+Notably you can also pipe data into the t.test. This works best if you specify the variables as a formula. This is the same weigth on Diet 1 vs 2 on day 21 as before, but in the pipe. 
+
+```{r}
+#filter for day 21
+#filter to only keep diets 1 and 2
+#formula is y~x, "data=." specifies to use the data coming from the pipe
+
+ChickWeight %>% 
+  filter(Time==21) %>%
+  filter(Diet %in% c(1,2)) %>% 
+  t.test(weight ~ Diet, data=.) 
+```
+```{r}
+#QUESTION: Using the pipe, how would you test if the mean sample weight on day 0 for Diet 1 is significantly different from 40?
+#Hint: The formula for a one sided test is y~1
+#Hint: the option for true value of the mean is "mu"
+
+```
+
+
+#### wilcox.test
+
+It's very easy to switch to the non-parametric alternative to the t-test in R because the syntax is almost exactly the same.
+
+```{r}
+# just switch t.test to wilcox.test to perform the Wilcoxon Rank Sum test. 
+diet.day21.wilcox = wilcox.test(x = diet1.day21, y = diet2.day21)
+```
+
+It is also easy to do a paired test (difference for each subject). This is desirable in cases where you are measuring the same subject over time. For paired tests, it is important to check that the subjects actually match. Say you want to test if, on average, the weight of chicks on diet 1 for day 18 is different than their weight on day 21. 
+
+```{r}
+#get the weight on day 18
+diet1.day18 <- ChickWeight %>% filter(Time==18) %>% filter(Diet==1) %>% pull(weight,name = Chick)
+
+#check that the chicks match
+print("day18")
+diet1.day18
+print("day21")
+diet1.day21
+
+#The chicks don't match, day 21 did not measure a chick #8
+```
+
+```{r}
+#find the mice that have measurements for both days
+matching_mice = intersect(names(diet1.day18),names(diet1.day21))
+
+#subset to just the matching mice
+diet1.day18 <- diet1.day18[matching_mice]
+diet1.day21 <- diet1.day21[matching_mice]
+
+#you can give both datasets and perform the test as "paired" to perform a Wilcoxon signed rank test.
+#you need to be very careful that the order of the x and y vectors match. 
+wilcox.test(diet1.day18,diet1.day21, paired = T)
+
+```
+
+#### cor.test and cor
+
+To perform a correlation test. Let's perform a 
+
+```{r}
+#By default, cor.test performs a pearson correlation
+diet1.day.pearson = cor.test(diet1.day18,diet1.day21)
+diet1.day.pearson
+
+#For a spearman correlation
+diet1.day.spearman = cor.test(diet1.day18,diet1.day21, method = "spearman")
+diet1.day.spearman
+
+#it's clear they are pretty strongly associated
+plot(diet1.day18, diet1.day21)
+```
+
+If you just want to compute r/rho, it is faster to use cor().
+
+```{r}
+#pearson
+cor(diet1.day18,diet1.day21)
+#spearman
+cor(diet1.day18,diet1.day21, method = "spearman")
+```
+
+cor() also will do all the pairwise correlations if you give it a matrix. For example, you could test the co-correlation for each set of timepoints across all mice. 
+
+```{r}
+#make the data into a matrix chick x time matrix
+ChickWeight %>% 
+  spread(key = Time, value = weight) %>% 
+  dplyr::select(-Diet) %>% 
+  mutate(Chick = as.numeric(as.character(Chick))) %>% 
+  arrange(Chick) %>% 
+  column_to_rownames("Chick") %>% 
+  as.matrix() -> chick.mat
+
+#do the pairwise correlation
+chick.mat.cor <- cor(chick.mat, use = "pairwise.complete")
+
+#view the correlation matrix
+chick.mat.cor 
+
+#plot the pearson's r as a heatmap
+heatmap(chick.mat.cor,
+        Rowv = NA,
+        Colv = NA,
+        scale="none")
+```
+
+
+#### tidy testing
+
+Sometimes you want to do a lot of t-tests and extract the coefficient and p-values. You could do this by writing a for loop, an apply function, or several different ways in the dplyr pipe. The rstatix package is one of the more elegant ways to perform and store multiple statistical test. We loaded it into the library at the begging. 
+
+For each diet, let's compare the weight of each timepoint to time zero.
+
+```{r}
+#The setup is mostly similar to t.test, but we are using the function t_test
+#grouping by diet will iterate over each diet group
+#the formula weight~Time shows we are testing weight grouped by time
+#setting ref.group=0 compared only to time 0
+ChickWeight %>%
+  group_by(Diet) %>%
+  t_test(weight~Time,ref.group = "0") -> 
+  diet.time0.tests
+
+ diet.time0.tests
+ 
+ ChickWeight %>%
+  group_by(Diet) %>%
+  t_test(weight~Time) -> 
+  diet.all.times.tests
+
+ diet.all.times.tests
+ 
+ #similarly there are functions cor_test and wilcox_test
+```
+
+
+```{r}
+#QUESTION: In the pipe, how would you perform a cor test for each timepoint vs eachother (similar to how we used cor)
+#Hint: you still need to transform the data into wide format
+```
+
+More examples and documentation can be found [here](https://github.com/kassambara/rstatix).
+
+### Plotting in R (ggplot2)
+
+From the beginner workshop you should be familiar with basic plotting in R. Base plotting in R is great for quick, basic plots. However, for more complex plots with publication quality aesthetics, the ggplot2 package is the standard in R. 
+
+The "gg" in ggplot2 stands for "grammar of graphics" that is to say the package creates a syntax for the different elements of a graphic element. We'll start this section by going through the basic pieces to making a ggplot graphic.
+
+There are too many aspects of ggplot for one workshop so please read more in the [extensive documentation](https://ggplot2.tidyverse.org/index.html).
+
+#### Piece 1 - Data
+
+The first step is calling the function ggplot and giving it data. We will stick with ChickWeights for this. 
+
+```{r}
+#this calls ggplot and tells it the dataframe we are using
+#on it's own it will plot the panel the plot is going it, but not any of the data
+ggplot(data = ChickWeight)
+
+#you can also specify data for ggplot using the pipe
+#this is helpful because you can filter what goes into the plot
+ChickWeight %>% 
+  ggplot()
+```
+
+#### Piece 2 - Aesthetics 
+
+Aesthetics tell ggplot what variables in your data map to which attributes of the plot. It's often helpful to specify some basic aesthetics globally at the begging of the plot (you can change them for specific elements later). For example let's try to plot time on the x-axis and weight on the y-axis and color by diet.
+
+```{r}
+#aesthetics are specified within aes()
+#to add elements to the plot use the + operator
+#now that it knows what x/y are it will display the axes
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet)
+
+#you can also put the aesthetics inside the ggplot function
+#ChickWeight %>% 
+#  ggplot(mapping = aes(x = Time, y = weight, colour = Diet))
+  
+```
+
+#### Piece 3 - Geometry
+
+The geometry are the layers of the plot that determine what kind of plot is being made. Let's specify that we are plotting a dot plot with the same aesthetic setup as before.
+
+```{r}
+#we add geom_point to plot the points
+#this is plotting every data point you give it
+#note that since Diet is a factor it picks a discrete color for each diet
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point()
+
+#if you make diet numeric (i.e. continuous)                     ggplot will choose a continuous palette
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = as.numeric(Diet)) + 
+  geom_point()
+```
+
+You can also plot multiple geometries at a time. For example, let's also add a line plot.
+
+```{r}
+#we can add lines between all the points with geom_line()
+#however, without further specifications it will plot a point between every point in the color aesthetic group
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line()
+
+#We fix this by specifying an aesthetic for geom_line() that it should group the lines by Chick. 
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick))
+
+#Note that you can also set non-variable dependent aesthetics
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point(shape = 2, color = "black") +
+  geom_line(aes(group = Chick))
+```
+
+You can easily change a version this plot to a boxplot by replacing geom_point() with geom_boxplot().
+
+```{r}
+#Some plots require the aesthetics to be factors; since Time is continuous it is ignoring time
+#outlier.color = NA, will force it to not plot outliers
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_boxplot(outlier.color = NA)
+
+#Converting Time into a factor the plot makes a lot more sense
+ChickWeight %>% 
+  ggplot() +
+  aes(x = factor(Time), y = weight, color = Diet) + 
+  geom_boxplot(outlier.color = NA)
+```
+
+
+```{r}
+#QUESTION: Using the pipe, for day 21 only, how would you make a boxplot of weights, split by diet with a point on top for each chicken. Color the points by diet and make them triangles.  
+#Hint: `position = position_jitter()` is a nice option for points so that they don't plot on top of eachother. Shape 17 is the solid triangle. 
+```
+
+Some more geometries:
+
+```{r}
+#stacked barplots
+ChickWeight %>% 
+  ggplot() +
+  aes(x = factor(Time), y = weight, fill = Diet) + 
+  geom_bar(stat="identity")
+```
+
+```{r}
+#add a linear model
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+#histogram1
+ChickWeight %>% 
+  ggplot() +
+  aes(x = weight) + 
+  geom_histogram(binwidth = 5)
+
+#density plots
+ChickWeight %>% 
+  ggplot() +
+  aes(x = weight, color = Diet) + 
+  geom_density()
+
+```
+
+```{r}
+#plot text labels
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet, label = Chick) + 
+  geom_text()
+```
+
+
+
+```{r}
+#dot plots for count
+ChickWeight %>% 
+  ggplot() +
+  aes(x = factor(Time), y = Diet) + 
+  geom_count()
+
+#heatmap
+ChickWeight %>% 
+  ggplot() +
+  aes(x = factor(Time), y = Chick, fill = weight) + 
+  geom_tile()
+```
+
+
+#### Piece 4 - Scales
+
+Setting scales allows you to adjust the aesthetic elements. For example, setting the colors, or axis scales. Scales follow the syntax scale_\\{aesthetic\\}_\\{type\\}. 
+
+For example to adjust colors you have different options on how to scale them
+
+```{r}
+#using scale_color_discrete with built in palette names
+#palette.pals() list the palette names
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  scale_color_discrete(palette = "Set2")
+
+#specifying explicit colors with  scale_color_manual or scale_color_discrete
+#colors() is all the named colors in R, or you cna use hex
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  scale_color_manual(values = c("1"="tomato3","2"="#EEB422",
+                                "3"="springgreen3","4"="steelblue2"))
+
+#scale using a names color palette function like viridis
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  scale_color_viridis_d()
+
+
+#continuous colors often need a different color function like continuous
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = weight) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  scale_color_continuous(palette = "Set2")
+
+
+#though gradient also works well
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = weight) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  scale_color_gradientn(colors = c("steelblue","grey","firebrick"))
+
+#for some geom's there's a difference in fill and color
+ChickWeight %>% 
+  ggplot() +
+  aes(x = factor(Time), y = weight, color = Diet) + 
+  geom_boxplot(outlier.color = NA) + 
+  scale_color_manual(values = c("1"="tomato3","2"="#EEB422",
+                                "3"="springgreen3","4"="steelblue2"))
+
+#scaling the fill
+ChickWeight %>% 
+  ggplot() +
+  aes(x = factor(Time), y = weight, fill = Diet) + 
+  geom_boxplot(outlier.color = NA) + 
+  scale_fill_manual(values = c("1"="tomato3","2"="#EEB422",
+                                "3"="springgreen3","4"="steelblue2"))
+
+#you can combine them
+ChickWeight %>% 
+  ggplot() +
+  aes(x = factor(Time), y = weight, fill = Diet, color = Diet) + 
+  geom_boxplot(outlier.color = NA) + 
+  scale_color_manual(values = c("1"="tomato4","2"="goldenrod4",
+                                "3"="springgreen4","4"="steelblue4")) +
+  scale_fill_manual(values = c("1"="tomato1","2"="goldenrod1",
+                                "3"="springgreen1","4"="steelblue1"))
+
+
+```
+
+Scales are also important for changing the axes and setting the limits. For example, you can use them to make the axis longer or truncated, break at different points,logged, or change the order for discrete variables. 
+
+```{r}
+#make the y axis extend to 500 and adjust the axis breaks
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) +
+  scale_y_continuous(limits = c(0,500), breaks = c(0,250,500))
+
+#order the diet and scale y in log
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Diet, y = weight, color = Diet) + 
+  geom_boxplot() + 
+  scale_x_discrete(limits = c(3,4,1,2)) +
+  scale_y_log10(limits = c(1,500),breaks = c(1,10,100,500))
+```
+
+#### Piece 5 - Facets
+
+Facets let you split a plot into multiple plots by a variable. For example, split the lineplot by diet. 
+
+```{r}
+#facet_wrap() allows you to breaks into any number of rows
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  facet_wrap(~Diet)
+
+#you can also set a different axis for each plot 
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  facet_wrap(~Diet, scales="free_y")
+
+
+#facet grid is similar, but the variable is either split on x or y
+#this forces the above plot to be 1 row
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  facet_grid(~Diet, scales="free_y")
+
+
+#this forces the above plot to be 1 row
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Chick, y = weight, color = Diet) + 
+  geom_point() +
+  facet_grid(Time~Diet, scales="free", space="free_x")
+```
+
+#### Piece 6 - Coordinates
+
+This is probably the piece you will use the most infrequently. Coordinates allow you to make the aspect ratio the same, flip the axes, or convert to polar coordinates. 
+
+```{r}
+#flip the boxplots
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Diet, y = weight, color = Diet) + 
+  geom_boxplot() +
+  coord_flip()
+
+#flip the boxplots
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  coord_polar(theta = 'x')
+```
+
+#### Piece 7 - Theme
+
+Theme is all the things that make ggplot graphics look really good. There are several built-in themes, but usually you will want to customize on top of that. 
+
+```{r}
+#theme_classic is a decent start
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  theme_classic()
+
+#so is minimal
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  theme_minimal()
+
+#some remove too much
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  theme_void()
+
+#some are hideous
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) + 
+  theme_dark()
+
+
+```
+
+Theme is also used to adjust specific elements on the panels, and axes. 
+
+```{r}
+#you specify 
+#remove the panel background and turn the grid black
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) +
+  facet_wrap(~Diet) +
+  theme(panel.background = element_blank()) +
+  theme(panel.grid = element_line(color = "black"))
+
+
+#you specify 
+#turn the facet boxes dark and make the text larger and white
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) +
+  facet_wrap(~Diet) +
+  theme(strip.background = element_rect(fill = "grey20")) +
+  theme(strip.text = element_text(size=12, color = "white"))
+
+
+#Add a title and overwrite the axis names
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) +
+  facet_wrap(~Diet) +
+  ggtitle("MyPlot") +
+  xlab("time since dose") +
+  ylab("weight in grams")
+
+
+#Adjust text size/color/directions/alignment
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) +
+  facet_wrap(~Diet) +
+  ggtitle("MyPlot") +
+  theme(plot.title = element_text(hjust = 0.5, size=16)) +
+  theme(axis.title = element_text(size=14, color = "darkgrey")) +
+  theme(axis.text.x = element_text(size=10, angle=90, hjust = 1, vjust = 0.5))
+
+#draw or adjust axis lines
+ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) +
+  facet_wrap(~Diet) +
+  ggtitle("MyPlot") +
+  theme(axis.line = element_line(linetype = "dashed", color = "red",size = 0.5))+
+  theme(axis.ticks.y = element_line(color = "blue", size=3))
+```
+
+Also you can save your plot to a variable and add elements to that later. 
+
+```{r}
+p <- ChickWeight %>% 
+  ggplot() +
+  aes(x = Time, y = weight, color = Diet) + 
+  geom_point() +
+  geom_line(aes(group = Chick)) +
+  facet_wrap(~Diet) +
+  ggtitle("MyPlot")
+
+p
+
+p + theme_minimal()
+```
+
+
+
+
+## Learn More
+
+Documentation on every ggplot function: [ggplot documentation](https://ggplot2.tidyverse.org/index.html)
+
+Book by the package author with tons of examples: [ggplot book](https://ggplot2-book.org/)
+
+For more inspiration on making pretty plots: [The R graph gallery](https://r-graph-gallery.com/).
+
+For heatmaps and heatmap-related plots (like oncoprints): [ComplexHeatmap package](https://jokergoo.github.io/ComplexHeatmap-reference/book/index.html)
+
+For a huge list of color palettes: [paletteer](https://github.com/EmilHvitfeldt/r-color-palettes)
+
+Package of plot themes:[ggtheme](https://yutannihilation.github.io/allYourFigureAreBelongToUs/ggthemes/)
+
+Combining multiple plots into a single graphic: [patchwork](https://patchwork.data-imaginist.com/) and [cowplot](https://wilkelab.org/cowplot/index.html)
+
+Ginormous list of ggplot compatible extension packages: [awesome-ggplot](https://github.com/erikgahner/awesome-ggplot2)
+

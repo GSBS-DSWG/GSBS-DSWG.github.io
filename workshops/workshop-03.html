@@ -27,9 +27,18 @@ nav: workshops
        ===================== -->
         <section class="workshop-overview">
             <h2>Overview</h2>
+            <h3>Lecture</h3>            
+            <p><strong>Date:</strong> September 18, 2025</p>
+            <p><strong>Instructor:</strong> Dr. Aatish Thennavan</p>
+            <p>Lecture covering both experimental and computational workflows for bulk RNA-sequencing data.</p>
+
+            <p><br></p>
+
+            <h3>Workshop</h3>
             <p><strong>Date:</strong> October 16, 2025</p>
             <p><strong>Instructor:</strong> Dr. Aatish Thennavan</p>
-            <p>Learn standard analysis for bulk RNA-sequencing data.</p>
+            <p>Hands-on bulk RNA-sequencing workshop covering various techniques, applications, and best practices for analyzing bulk RNA-sequencing data.</p>
+
         </section>
 
         <!-- =====================
@@ -54,9 +63,19 @@ nav: workshops
             <div class="download-box">
                 <ul>
 
-                    <li><strong>{{ file.name }}:</strong> {{ file.description }}</li>
+                    <li><strong>workshop-03.zip:</strong> compressed folder containing all workshop content.</li>
+                    <ul>
+                        <li><strong>README.md</strong> document detailing required R packages and learning goals.
+                        </li>
+                        <li><strong>data/</strong> folder containing TCGA data used in the workshop</li>
+                        <li><strong>code/</strong> folder containing workshop R markdown.</li>
+                        <li><strong>slides/</strong> folder containing all lecture slides (experimental and computational workflows)</li>
+
+                    </ul>
 
                 </ul>
+                <br>
+
                 <a class="download-btn" href="{{ site.baseurl }}/downloads/workshop-03.zip" download>
                     ⬇ Download Workshop 3 Materials
                 </a>
@@ -70,7 +89,11 @@ nav: workshops
             <h2>Workshop Steps</h2>
             <ol>
 
-                <li>{{ step }}</li>
+                <li>Download workshop materials above</li>
+                <li>Once downloaded, upzip contents</li>
+                <li>Read through lecture slides</li>
+                <li>Follow instructions in README to set up environment</li>
+                <li>Open <i>code/bulkRNAseqworkshop_2025.Rmd</i> and follow along</li>
 
             </ol>
         </section>

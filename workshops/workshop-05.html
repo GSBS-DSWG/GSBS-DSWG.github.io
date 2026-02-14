@@ -29,7 +29,7 @@ nav: workshops
             <h2>Overview</h2>
             <p><strong>Date:</strong> February 5, 2026</p>
             <p><strong>Instructor:</strong> Dr. Jake Leighton</p>
-            <p>An introduction to data science and R starting from the foundations.</p>
+            <!-- <p>An introduction to data science and R starting from the foundations.</p> -->
         </section>
 
         <!-- =====================
@@ -37,7 +37,7 @@ nav: workshops
        ===================== -->
         
         <section class="workshop-video">
-            <h2>Workshop Video</h2>
+            <h2>Workshop Video (COMING SOON)</h2>
             <div class="video-container">
                 <iframe width="560" height="315" src="https://www.youtube.com/embed/YOUR_VIDEO_ID" title="Workshop Video" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -53,10 +53,18 @@ nav: workshops
             <h2>Download Materials</h2>
             <div class="download-box">
                 <ul>
-                    
-                    <li><strong>{{ file.name }}:</strong> {{ file.description }}</li>
-                    
+
+                    <li><strong>workshop-05.zip:</strong> compressed folder containing all workshop content.</li>
+                    <ul>
+                        <!-- <li><strong>README.md</strong> document detailing required R packages and learning goals.</li> -->
+                        <!-- <li><strong>data/</strong> folder containing TCGA data used in the workshop</li> -->
+                        <li><strong>code/</strong> folder containing workshop R markdowns and knitted html.</li>
+                        <!-- <li><strong>slides/</strong> folder containing all lecture slides (experimental and computational workflows)</li> -->
+
+                    </ul>
+
                 </ul>
+                <br>
                 <a class="download-btn" href="{{ site.baseurl }}/downloads/workshop-05.zip" download>
                     ⬇ Download Workshop 5 Materials
                 </a>
@@ -70,7 +78,11 @@ nav: workshops
             <h2>Workshop Steps</h2>
             <ol>
                 
-                <li>{{ step }}</li>
+                <li>Download workshop materials above</li>
+                <li>Once downloaded, upzip contents</li>
+                <li>Open <i>code/R_MiniBootcamp_Workshop_JL.Rmd</i> and follow along</li>
+                <li>Complete practice assignments located in <i>code/R_MiniBootcamp_Workshop_Practice_JL.Rmd</i></li>
+                <li>Expected output and solutions available in corresponding <i>.html</i> files</li>
                 
             </ol>
         </section>

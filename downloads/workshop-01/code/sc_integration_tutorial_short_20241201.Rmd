@@ -1,0 +1,692 @@
+---
+title: "Single Cell Intergration"
+author: "Anna K. Casasent, PhD"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#pdf_document
+knitr::opts_chunk$set(echo = TRUE, fig.width = 12, fig.height = 8)
+```
+
+# Introduction
+
+Single-cell RNA sequencing (scRNA-seq) has revolutionized our ability to study complex biological systems at unprecedented resolution. However, as datasets grow larger and more complex, researchers face significant challenges in integrating and analyzing data from multiple sources. This tutorial aims to guide you through advanced techniques for scRNA-seq data analysis, with a focus on integration methodologies and quality assessment. Drawing from my experience in cancer genomics and computational biology, we'll explore key steps in a modern scRNA-seq analysis workflow:
+
+    * Data preprocessing and quality control
+    * Integration method comparison (Harmony, RPCA)
+    * Assessment of integration effectiveness
+    * Statistically-driven cluster selection
+    * Cell type annotation strategies
+
+We'll use renal data from the CellxGene database as our example dataset. This choice allows us to work with clinically relevant data that presents common challenges in single-cell analysis, such as batch effects and tumor heterogeneity. 
+
+The goal is this tutorial is to give you have a solid understanding of:
+
+    * How to prepare and preprocess scRNA-seq data for integration
+    * The principles and application of different integration methods
+    * Techniques to evaluate integration success using visualization and quantitative metrics
+    * Strategies to determine optimal clustering parameters
+    * Methods for annotating cell types in an integrated dataset
+    
+Note: I will devote most of the lecture to the integration methods and assessing integration -- is it needed and did it work.
+
+Hopefully, this will empower you to tackle complex single-cell projects with confidence, whether you're studying cancer genomics, developmental biology, or other areas of biomedical research. 
+
+# Data Preparation
+ 
+In this section, we prepare our environment and load the necessary libraries for single-cell RNA sequencing (scRNA-seq) data analysis. 
+
+Each library serves a specific purpose in our workflow.
+
+These libraries are crucial for our analysis pipeline in the following ways:
+
+    cellxgenedp allows us to directly access and download data from the CellxGene portal, simplifying data acquisition.
+    Seurat is the core package for scRNA-seq analysis, providing functions for data normalization, dimensionality reduction, clustering, and visualization.
+    harmony is used for batch effect correction and data integration, which is essential when working with multiple datasets or samples.
+    ggplot2 and patchwork are used for creating publication-quality visualizations of our data and results.
+    dplyr provides efficient data manipulation functions that we'll use throughout our analysis.
+    biomaRt is used to convert gene identifiers, specifically from Ensembl IDs to HUGO gene symbols, making our data more interpretable.
+    cluster, fpc, and clusterSim provide functions for cluster analysis and validation, which we'll use to evaluate our clustering results.
+    fields and lisi are used for calculating the Local Inverse Simpson's Index, a metric for assessing integration quality.
+    kneedle helps in determining the optimal number of principal components to use in our analysis.
+
+By loading these libraries at the beginning of our script, we ensure that all the necessary functions are available for our subsequent analysis steps. 
+
+While there are many other different tools we could use, we selected tools that are more robust and commonly used in single cell sequencing analysis in R. 
+
+```{r libraries}
+library(cellxgenedp)
+# Provides an R interface for discovering, viewing, and downloading single-cell data from the CELLxGENE data portal.
+# Reference: https://bioconductor.org/packages/cellxgenedp/
+
+library(Seurat)
+# A toolkit for quality control, analysis, and exploration of single-cell RNA sequencing data.
+# Reference: https://satijalab.org/seurat/
+
+library(harmony)
+# Used for integrating multiple single-cell datasets and correcting batch effects.
+# Reference: https://github.com/immunogenomics/harmony
+
+library(ggplot2)
+# A system for declaratively creating graphics, based on The Grammar of Graphics.
+# Reference: https://ggplot2.tidyverse.org/
+
+library(patchwork)
+# Simplifies the process of combining multiple ggplots into one graphic.
+# Reference: https://patchwork.data-imaginist.com/
+
+library(dplyr)
+# A grammar of data manipulation, providing a consistent set of verbs to help solve data manipulation challenges.
+# Reference: https://dplyr.tidyverse.org/
+
+library(biomaRt)
+# Provides an interface to BioMart databases (e.g., Ensembl, COSMIC, Wormbase and Gramene).
+# Reference: https://bioconductor.org/packages/release/bioc/html/biomaRt.html
+
+library(cluster)
+# Provides functions for cluster analysis, including calculating silhouette scores.
+# Reference: https://cran.r-project.org/web/packages/cluster/index.html
+
+library(fpc)
+# Flexible procedures for clustering, including various clustering algorithms and cluster validation statistics.
+# Reference: https://cran.r-project.org/web/packages/fpc/index.html
+
+library(fields)
+# Contains tools for spatial data and functions for spline fitting and kriging.
+# Reference: https://cran.r-project.org/web/packages/fields/index.html
+
+library(lisi)
+# Implements the Local Inverse Simpson's Index (LISI) to assess the mixing of cells across categorical variables in single-cell datasets.
+# Reference: https://github.com/immunogenomics/LISI
+
+library(kneedle)
+# Provides a method for finding the elbow point using the "knee" method.
+# Reference: https://github.com/etam4260/kneedle
+
+library(clusterSim)
+# Searching for optimal clustering procedures for a dataset.
+# Reference: https://cran.r-project.org/web/packages/clusterSim/index.html
+```
+
+# Load the CellxGene dataset
+
+This section demonstrates how to access and download single-cell RNA sequencing data from the CellxGene database.
+
+## Set base directories 
+
+This code sets up the base directory for the workshop and creates a subdirectory for data storage. Adjust the base directory path as needed for your system.
+
+```{r base_dirs}
+chr_base_dir <- "C:/Users/akc/Desktop/workshop"
+chr_dest_dir <- paste(chr_base_dir,"data", sep = "/")
+```
+
+## CellxGene database 
+
+This creates a connection to the CELLxGENE data portal. The db() function from the cellxgenedp package initializes the database connection, allowing us to query and access datasets.
+
+```{r obj_cxg_db}
+# Create a connection to the CELLxGENE data portal
+obj_cxg_db <- db()
+```
+
+### Find dataset
+This code filters the datasets from the CELLxGENE data portal based on several criteria:
+
+    Title contains "cancer"
+    Suspension type contains "cell"
+    Organism is "Homo sapiens"
+    Assay includes "10x" (likely referring to 10x Genomics technology)
+    Is primary data
+    Donor ID contains a comma (suggesting multiple donors)
+    Published on April 26, 2023
+    Cell count is less than 10,000
+    
+The resulting dataset IDs are printed.
+
+```{r tbl_filtered_db}
+# Filter datasets from the CELLxGENE data portal based on specific criteria
+tbl_filtered_db <- datasets(obj_cxg_db) %>%
+  filter(grepl("cancer", title, ignore.case = TRUE),
+         grepl("cell", suspension_type, ignore.case = TRUE),
+         grepl("Homo sapien", organism, ignore.case = TRUE),
+         grepl("10x", assay, ignore.case = TRUE),
+         sapply(is_primary_data, function(x) any(x == TRUE | x == "TRUE")),
+         grepl(",", donor_id),
+         grepl("2023-04-26", published_at),
+         cell_count < 10000)
+
+# prints out the name of the ids that we have selected based on this info
+print(tbl_filtered_db$dataset_id)
+```
+
+## Get the file information for the dataset
+
+This code retrieves file information for the filtered datasets:
+
+    tbl_dataset_files contains all files associated with the filtered datasets.
+    tbl_rds_file specifically selects the RDS file from the dataset files.
+    
+    Note that the rds file format will be remove in later this month and items will need to be processed from the H5AD data instead.
+
+The RDS file is then used for downloading and loading the single-cell data into R for further analysis.
+
+```{r dataset}
+# Retrieve files associated with the filtered datasets
+tbl_dataset_files <- files(obj_cxg_db) %>% filter(dataset_id %in% tbl_filtered_db$dataset_id)
+```
+
+## Find the rds file
+```{r rds}
+# Extract H5AD and RDS file information from the dataset files
+# tbl_h5ad_file  <- tbl_dataset_files %>% filter(filetype == "H5AD")
+# h5ad_path <- download_files(tbl_h5ad_file)
+
+tbl_rds_file <- tbl_dataset_files %>% filter(filetype == "RDS")
+```
+
+## Download the RDS file
+
+```{r download_rds}
+# Create the directory if it does not exist
+if (!dir.exists(chr_dest_dir)) {
+    dir.create(chr_dest_dir, recursive = TRUE)
+}
+
+# get the file path for where you have downloaded the data.
+chr_rds_file_path <- paste(chr_dest_dir, basename(tbl_rds_file$url), sep = "/")
+```
+
+## Load the RDS file
+Here we load the RDS file.
+```{r read_obj, eval=TRUE}
+# read the seurat object
+obj_seurat  <- readRDS(chr_rds_file_path)
+```
+
+# Ensembl
+In single-cell RNA sequencing analysis, converting gene identifiers from Ensembl IDs to more familiar HUGO gene symbols is a crucial step for improved interpretability. This section outlines the process of connecting to the Ensembl database and retrieving HUGO gene symbols for our dataset.
+
+## Connect to Ensembl Database
+
+First, we create a function to establish a connection to the Ensembl database. 
+
+This function attempts to connect to different Ensembl mirrors with a retry mechanism to ensure robust connectivity.
+
+```{r Ensembl, eval=TRUE}
+# Increase the timeout limit
+options(timeout = 300)  # Set timeout to 5 minutes
+
+# Function to connect to Ensembl with retry mechanism
+connect_to_ensembl <- function(max_attempts = 3, mirrors = c("useast", "uswest", "asia")) {
+  if (!requireNamespace("biomaRt", quietly = TRUE)) {
+    stop("biomaRt package is not installed. Please install it using BiocManager::install('biomaRt')")
+  }
+  library(biomaRt)
+  
+  for (attempt in 1:max_attempts) {
+    for (mirror in mirrors) {
+      tryCatch({
+        ensembl <- useEnsembl(biomart = "genes",
+                              dataset = "hsapiens_gene_ensembl",
+                              mirror = mirror)
+        return(ensembl)
+      }, error = function(e) {
+        message(sprintf("Attempt %d failed for mirror %s: %s", attempt, mirror, e$message))
+      })
+    }
+    if (attempt < max_attempts) Sys.sleep(15) # Wait 15 seconds before retrying
+  }
+  stop("Failed to connect to Ensembl after all attempts")
+}
+
+```
+
+
+## Retrieve HUGO Gene Symbols
+
+Next, we use the established connection to retrieve HUGO gene symbols for our Ensembl IDs:
+
+```{r Ensembl_HUGO}
+# Get the Ensembl IDs from the Seurat object
+chr_ensembl_ids <- rownames(obj_seurat)
+
+# Connect to the Ensembl database with retry mechanism
+obj_ensembl <- connect_to_ensembl()
+
+# Retrieve HUGO gene symbols
+tbl_gene_symbols  <- getBM(attributes = c("ensembl_gene_id", "hgnc_symbol"),
+                      filters = "ensembl_gene_id",
+                      values = chr_ensembl_ids,
+                      mart = obj_ensembl)
+```
+
+
+## Map Ensembl IDs to HUGO Symbols
+
+We then create a mapping between Ensembl IDs and HUGO symbols.
+
+Here we take the vector of the Hugo terms. Then we convert it. Note that we don’t have all the terms covered. Therefore, we will map to the initial Ensembl ids if the Hugo term was an empty vector.
+
+```{r tbl_gene_symbols}
+# Create a named vector for easy mapping
+vec_id_map <- setNames(tbl_gene_symbols$hgnc_symbol, tbl_gene_symbols$ensembl_gene_id)
+
+# Replace Ensembl IDs with HUGO symbols in the Seurat object
+chr_new_rownames <- vec_id_map[rownames(obj_seurat)]
+chr_new_rownames[which(chr_new_rownames == "")] <- rownames(obj_seurat)[which(chr_new_rownames == "")]
+chr_new_rownames[is.na(chr_new_rownames)] <- rownames(obj_seurat)[is.na(chr_new_rownames)]
+chr_new_rownames <- make.unique(chr_new_rownames)
+```
+
+## Update Seurat Object
+
+Here we adjust the Seurat object because it will not let you rename items just by reassigning. 
+
+Finally, we update our Seurat object with the new HUGO gene symbols:
+
+```{r obj_seurat}
+# Create a new Seurat object with renamed features
+obj_new_seurat <- obj_seurat
+
+# Update the RNA assay
+mat_new_counts <- LayerData(obj_seurat, assay = "RNA", layer = "counts")
+mat_new_data <- LayerData(obj_seurat, assay = "RNA", layer = "data")
+rownames(mat_new_counts) <- chr_new_rownames
+rownames(mat_new_data) <- chr_new_rownames
+obj_new_seurat[["RNA"]] <- CreateAssayObject(counts = mat_new_counts)
+obj_new_seurat[["RNA"]] <- SetAssayData(obj_new_seurat[["RNA"]], layer = "data", new.data = mat_new_data)
+
+# Transfer other important slots
+obj_new_seurat@reductions <- obj_seurat@reductions
+obj_new_seurat@graphs <- obj_seurat@graphs
+obj_new_seurat@neighbors <- obj_seurat@neighbors
+
+# Set the default assay
+DefaultAssay(obj_new_seurat) <- DefaultAssay(obj_seurat)
+
+obj_old_seurat <- obj_seurat
+obj_seurat <- obj_new_seurat
+```
+
+This process ensures that our gene identifiers are now in the more familiar HUGO format, facilitating easier interpretation of results in downstream analyses.
+
+# Basic Preprocessing
+
+This section outlines essential preprocessing steps for single-cell RNA sequencing (scRNA-seq) data using the Seurat package. These steps are crucial for preparing the data for downstream analyses and ensuring robust results.
+
+This code performs standard preprocessing steps for single-cell RNA sequencing data using the Seurat package:
+
+    NormalizeData(): This function normalizes the gene expression measurements for each cell by the total expression, multiplies by a scale factor (10,000 by default), and log-transforms the result.
+    FindVariableFeatures(): Identifies the most variable genes across the dataset. It uses the "vst" (variance stabilizing transformation) method to select the top 2000 variable features.
+    ScaleData(): Scales and centers the expression values for each gene, which is crucial for downstream analyses like PCA.
+    RunPCA(): Performs Principal Component Analysis on the scaled data, computing 50 principal components. PCA is used for dimensionality reduction and to capture the main sources of variation in the dataset.
+
+```{r normalized}
+# Normalize the data
+obj_seurat <- NormalizeData(obj_seurat)
+
+# Identify highly variable features
+obj_seurat <- FindVariableFeatures(obj_seurat, selection.method = "vst", nfeatures = 2000)
+
+# Scale the data
+obj_seurat <- ScaleData(obj_seurat)
+
+# Perform Principal Component Analysis (PCA)
+int_dim <- 50
+obj_seurat <- RunPCA(obj_seurat, npcs = int_dim)
+```
+
+# Data Visualization (No Integration)
+
+Before integration, let's visualize the data. This data has already been combined and cleaned. Note that while this should be the "raw" counts, we will normalize the data and process it. It is best practice to process from the original files. However, that would involve cleaning and other items, which are a lecture in and off themselves. Therefore we will practice using this already cleaned and processed dataset.
+
+The code visualizes the data using UMAP, grouped by donor ID and cell type. This step helps determine if integration is necessary.
+
+I always suggest doing this in order to see if you actually NEED to integrate. 
+
+After all you want to make sure there is a viable reason for integrating items. 
+
+In this case I would not integrate because I can clearly see clusters and each of the donors appear to be in most of the clusters. 
+
+```{r umap_data}
+# Run UMAP on the Seurat object
+obj_seurat <- RunUMAP(obj_seurat, dims = 1:30)
+
+plt_data <- DimPlot(obj_seurat, reduction = "umap", group.by = "donor_id") +
+  ggtitle("Data (No Integration)")
+print(plt_data)
+```
+
+# Harmony Integration
+Harmony is a powerful tool for integrating single-cell data [@korsunsky2019fast]. 
+
+Here are key settings:
+
+    * group.by.vars: Specifies variables for batch correction (e.g., "chemistry").
+    * theta: Controls correction strength. Higher values prioritize batch correction.
+    * lambda: Affects diversity preservation. Higher values emphasize within-group diversity.
+    * max.iter.harmony: Sets maximum iterations for convergence.
+    * epsilon.cluster: Controls clustering tolerance during integration.
+
+
+The code runs Harmony integration on the dataset:
+
+    Performs Harmony integration using donor ID as the batch variable.
+    Visualizes the integrated data using UMAP, grouped by donor ID and cell type.
+
+Reminder: The data does not appear to need integration and unrequired integration can destroy biological data. This is merely an example of how to use Harmony to integrate by a given batch variable.
+
+```{r umap_harmony}
+obj_harmony <- RunHarmony(obj_seurat, group.by.vars = "donor_id")
+obj_harmony <- RunUMAP(obj_harmony, reduction = "harmony", dims = 1:30)
+plt_harmony <- DimPlot(obj_harmony, reduction = "umap", group.by = "donor_id") +
+  ggtitle("Harmony Integration")
+print(plt_harmony)
+```
+
+# RPCA Integration
+Reciprocal PCA (RPCA) is a powerful method for integrating multiple single-cell RNA sequencing datasets. This section demonstrates how to perform RPCA integration using the Seurat package.
+
+## Split the dataset
+First, we split the Seurat object by donor ID and preprocess each subset:
+
+    Splits the Seurat object into a list of smaller objects, one per donor.
+    Normalizes the data for each donor using log-normalization.
+    Identifies highly variable features for each donor subset.
+
+```{r split_rpca}
+lst_split_data <- SplitObject(obj_seurat, split.by = "donor_id")
+lst_split_data <- lapply(lst_split_data, function(x) {
+  x <- NormalizeData(x)
+  x <- FindVariableFeatures(x)
+  return(x)
+})
+```
+
+## Perform RPCA integration
+
+Reminder: The data does not appear to need integration and unrequired integration can destroy biological data. This is merely an example of how to use RPCA to integrate by a given batch variable.
+
+Next, we perform the RPCA integration: 
+ 
+This process involves:
+
+    Selecting features to use for integration across all datasets.
+    Finding integration anchors using RPCA.
+    Integrating the data based on the identified anchors.
+
+```{r intergate_rpca}
+vec_features <- SelectIntegrationFeatures(object.list = lst_split_data)
+obj_rpca_anchors <- FindIntegrationAnchors(object.list = lst_split_data, anchor.features = vec_features, reduction = "rpca")
+obj_rpca <- IntegrateData(anchorset = obj_rpca_anchors)
+```
+
+## Visualize RPCA integration
+
+Finally, we process and visualize the integrated data: 
+
+    Selecting features to use for integration across all datasets.
+    Finding integration anchors using RPCA.
+    Integrating the data based on the identified anchors.
+
+```{r umap_rpca}
+obj_rpca <- ScaleData(obj_rpca)
+obj_rpca <- RunPCA(obj_rpca)
+obj_rpca <- RunUMAP(obj_rpca, dims = 1:30)
+plt_rpca <- DimPlot(obj_rpca, reduction = "umap", group.by = "donor_id") +
+  ggtitle("RPCA Integration")
+print(plt_rpca)
+```
+
+## Why Harmony Might Be Better Than Other Methods
+
+    1. Harmony vs. CCA (Canonical Correlation Analysis):
+        
+        * Harmony is faster and scales better with large datasets [@stuart2019comprehensive].
+        
+        * Handles complex batch structures more effectively.
+        
+    2. Harmony vs. RPCA (Reciprocal PCA):
+    
+        * Harmony works well with non-linear relationships between datasets [@stuart2019comprehensive].
+        
+        * More flexible in handling various batch effects.
+        
+    3. Harmony vs. scVI:
+        * Harmony is computationally less demanding [@lopez2018deep].
+        
+        * Easier to use and tune, especially for those less familiar with deep learning.
+
+# Evaluation of Integration Methods
+
+To evaluate the effectiveness of integration methods, the code:
+
+    Calculates Local Inverse Simpson's Index (LISI) scores for both Harmony and RPCA integrations.
+    Summarizes and visualizes LISI scores for donor IDs and cell types.
+
+
+## Visual Comparison
+
+```{r comparison_plots}
+plt_comparison <- plt_data + plt_harmony + plt_rpca
+print(plt_comparison)
+```
+
+## Silhouette Score Analysis
+
+Higher silhouette scores and mixing scores generally indicate better integration.
+
+```{r silhouete_comparison_plots}
+
+library(Seurat)
+library(ggplot2)
+library(cluster)
+library(fpc)
+library(fields)
+library(lisi) # Implements the Local Inverse Simpson's Index (LISI) to assess the mixing of cells across categorical variables in single-cell datasets. Reference: https://github.com/immunogenomics/lisi
+library(kneedle) # Provides a method for find the elbow point using the "knee" method https://github.com/etam4260/kneedle?tab=readme-ov-file 
+
+library(clusterSim) # Searching for optimal clustering procedure for a data set. https://cran.r-project.org/package=clusterSim
+
+# Function to calculate clustering metrics
+calculate_clustering_metrics <- function(obj_seurat, int_max_clusters = 20, vec_dims_use = 1:20) {
+  mat_pca_coords <- Embeddings(obj_seurat, reduction = "pca")[, vec_dims_use]
+  mat_dist_matrix <- as.matrix(dist(mat_pca_coords))
+  
+  lst_results <- lapply(2:int_max_clusters, function(k) {
+    tryCatch({
+      vec_clusters <- kmeans(mat_pca_coords, centers = k, nstart = 20)$cluster
+      num_sil <- mean(silhouette(vec_clusters, mat_dist_matrix)[, 3])
+      num_db <- index.DB(mat_pca_coords, vec_clusters)$DB
+      num_ch <- calinhara(mat_pca_coords, vec_clusters)
+      c(num_sil, num_db, num_ch)
+    }, error = function(e) {
+      message(sprintf("Error calculating metrics for k=%d: %s", k, e$message))
+      c(NA, NA, NA)
+    })
+  })
+  
+  mat_results <- do.call(rbind, lst_results)
+  colnames(mat_results) <- c("silhouette", "davies_bouldin", "calinski_harabasz")
+  
+  as.data.frame(mat_results)
+}
+
+# Function to determine consensus cluster number
+determine_consensus <- function(df_metrics) {
+  df_metrics$int_clusters <- 2:(nrow(df_metrics) + 1)
+  
+  df_metrics[, 1:3] <- scale(df_metrics[, 1:3])
+  df_metrics$davies_bouldin <- -df_metrics$davies_bouldin  # Invert Davies-Bouldin index
+  df_metrics$num_avg_score <- rowMeans(df_metrics[, 1:3])
+  
+  int_consensus_cluster <- df_metrics$int_clusters[which.max(df_metrics$num_avg_score)]
+  
+  vec_best_clusters <- c(
+    which.max(df_metrics$silhouette) + 1,
+    which.max(df_metrics$davies_bouldin) + 1,
+    which.max(df_metrics$calinski_harabasz) + 1
+  )
+  num_agreement_score <- sum(vec_best_clusters == int_consensus_cluster) / 3
+  
+  list(
+    int_consensus_cluster = int_consensus_cluster,
+    num_agreement_score = num_agreement_score,
+    df_metrics = df_metrics
+  )
+}
+
+# Function to analyze and plot clustering results
+analyze_clustering <- function(obj_seurat, chr_method) {
+  int_max_clusters <- 20
+  df_metrics <- calculate_clustering_metrics(obj_seurat, int_max_clusters = int_max_clusters)
+  lst_consensus <- determine_consensus(df_metrics)
+  
+  plt_metrics <- ggplot(lst_consensus$df_metrics, aes(x = int_clusters)) +
+    geom_line(aes(y = silhouette, color = "Silhouette")) +
+    geom_line(aes(y = davies_bouldin, color = "Davies-Bouldin")) +
+    geom_line(aes(y = calinski_harabasz, color = "Calinski-Harabasz")) +
+    geom_vline(xintercept = lst_consensus$int_consensus_cluster, linetype = "dashed", color = "red") +
+    labs(title = paste("Clustering Metrics -", chr_method),
+         x = "Number of Clusters",
+         y = "Normalized Score",
+         color = "Metric") +
+    theme_minimal()
+  
+  print(plt_metrics)
+  
+  cat(paste0("Consensus cluster number (", chr_method, "): ", lst_consensus$int_consensus_cluster, "\n"))
+  cat(paste0("Agreement score (", chr_method, "): ", round(lst_consensus$num_agreement_score, 2), "\n\n"))
+  
+  return(lst_consensus)
+}
+
+# Analyze clustering for different integration methods
+lst_results <- list(
+  Merged = analyze_clustering(obj_seurat, "Merged"),
+  Harmony = analyze_clustering(obj_harmony, "Harmony"),
+  RPCA = analyze_clustering(obj_rpca, "RPCA")
+)
+
+```
+
+### Interpretation of Silhouette Scores
+
+    Range: Silhouette scores typically range from -1 to +1.
+    Negative scores: Indicate that samples might be assigned to the wrong clusters.
+    Scores near zero: Suggest that samples are on or very close to the decision boundary between clusters.
+    Positive scores: Indicate that samples are well-matched to their clusters.
+
+## Measuring Integration Effectiveness
+
+To evaluate the effectiveness of integration methods, the code:
+
+    Calculates Local Inverse Simpson's Index (LISI) scores for both Harmony and RPCA integrations.
+    Summarizes and visualizes LISI scores for donor IDs and cell types.
+
+To quantify the effectiveness of integration and detect over/under-integration, we can use the Local Inverse Simpson's Index (LISI) [@korsunsky2019fast]:
+
+### Calculate LISI scores
+```{r lisi_scores}
+# Load necessary libraries
+library(ggplot2)
+
+# Calculate LISI scores for the integrated data using different methods
+lisi_scores_merge <- compute_lisi(
+  X = Embeddings(obj_seurat, "umap"),
+  meta_data = obj_seurat@meta.data,
+  label_colnames = c("donor_id", "cell_type")
+)
+
+lisi_scores_harmony <- compute_lisi(
+  X = Embeddings(obj_harmony, "umap"),
+  meta_data = obj_harmony@meta.data,
+  label_colnames = c("donor_id", "cell_type")
+)
+
+lisi_scores_rpca <- compute_lisi(
+  X = Embeddings(obj_rpca, "umap"),
+  meta_data = obj_rpca@meta.data,
+  label_colnames = c("donor_id", "cell_type")
+)
+```
+
+Here we have the summarize.
+
+```{r lisi}
+# Summarize LISI scores for each dataset
+summary_merge_donor <- summary(lisi_scores_merge$donor_id)
+summary_merge_cell <- summary(lisi_scores_merge$cell_type)
+
+summary_harmony_donor <- summary(lisi_scores_harmony$donor_id)
+summary_harmony_cell <- summary(lisi_scores_harmony$cell_type)
+
+summary_rpca_donor <- summary(lisi_scores_rpca$donor_id)
+summary_rpca_cell <- summary(lisi_scores_rpca$cell_type)
+
+# Print summaries
+print(summary_merge_donor)
+print(summary_merge_cell)
+print(summary_harmony_donor)
+print(summary_harmony_cell)
+print(summary_rpca_donor)
+print(summary_rpca_cell)
+
+```
+
+### Visualize LISI scores
+```{r lisi_plot_donor}
+# Visualize LISI scores distribution for cell types and donor IDs
+
+# Function to create histogram plots
+create_histogram <- function(data, title) {
+  ggplot(data, aes(x = num_lisi)) +
+    geom_histogram(bins = 50, fill = "blue", color = "black") +
+    ggtitle(title) +
+    theme_minimal()
+}
+
+# Prepare data frames for plotting
+df_rpca_celltype <- data.frame(num_lisi = lisi_scores_rpca$cell_type)
+df_rpca_donor <- data.frame(num_lisi = lisi_scores_rpca$donor_id)
+
+# Plot LISI scores for cell types (RPCA)
+plt_lisi_celltype <- create_histogram(df_rpca_celltype, "LISI Scores for Cell Types (RPCA)")
+print(plt_lisi_celltype)
+
+# Plot LISI scores for donor IDs (RPCA)
+plt_lisi_donor <- create_histogram(df_rpca_donor, "LISI Scores for Donor IDs (RPCA)")
+print(plt_lisi_donor)
+
+# Additional plots for merged and harmony datasets
+ggplot(data.frame(LISI = lisi_scores_merge$cell_type), aes(x = LISI)) +
+  geom_histogram(bins = 50, fill = "green", color = "black") +
+  ggtitle("LISI Scores for Cell Types (Merged)") +
+  theme_minimal()
+
+ggplot(data.frame(LISI = lisi_scores_harmony$cell_type), aes(x = LISI)) +
+  geom_histogram(bins = 50, fill = "orange", color = "black") +
+  ggtitle("LISI Scores for Cell Types (Harmony)") +
+  theme_minimal()
+
+ggplot(data.frame(LISI = lisi_scores_rpca$cell_type), aes(x = LISI)) +
+  geom_histogram(bins = 50, fill = "purple", color = "black") +
+  ggtitle("LISI Scores for Cell Types (RPCA)") +
+  theme_minimal()
+```
+
+### Interpretation:
+
+    * LISI scores for batch variables (e.g., donor_id) should be close to the number of batches (perfect mixing).
+    
+    * LISI scores for biological variables (e.g., cell_type) should be close to 1 (no mixing of different cell types).
+
+# Conclusion
+Based on the visual comparison, silhouette scores, and mixing metrics, you can determine which integration method performs best for your dataset. 
+
+Higher silhouette scores and mixing scores generally indicate better integration.
+
+However, it's important to also consider biological relevance and preservation of cell type-specific features when choosing the optimal integration method

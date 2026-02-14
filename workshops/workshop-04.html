@@ -27,9 +27,18 @@ nav: workshops
        ===================== -->
         <section class="workshop-overview">
             <h2>Overview</h2>
-            <p><strong>Date:</strong> Month DD, 2025</p>
+            
+            <h3>Lecture</h3>            
+            <p><strong>Date:</strong> November 13, 2025</p>
             <p><strong>Instructor:</strong> Dr. Ryan Mulqueen</p>
-            <p>Follow along to learn about single-cell DNA Methylation data analysis.</p>
+            <p>Introduction to single-cell methylation analysis.</p>
+
+            <p><br></p>
+
+            <h3>Workshop</h3>
+            <p><strong>Date:</strong> December 18, 2025</p>
+            <p><strong>Instructor:</strong> Dr. Ryan Mulqueen</p>
+            <p>Analysis of single-cell methylation data.</p>
         </section>
 
         <!-- =====================
@@ -37,7 +46,7 @@ nav: workshops
        ===================== -->
 
         <section class="workshop-video">
-            <h2>Workshop Video</h2>
+            <h2>Workshop Video (COMING SOON)</h2>
             <div class="video-container">
                 <iframe width="560" height="315" src="https://www.youtube.com/embed/YOUR_VIDEO_ID" title="Workshop Video" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -54,9 +63,14 @@ nav: workshops
             <div class="download-box">
                 <ul>
 
-                    <li><strong>{{ file.name }}:</strong> {{ file.description }}</li>
+                    <li><strong>workshop-04.zip:</strong> compressed folder containing lecture content.</li>
+                    <ul>
+                        <li><strong>slides/</strong> folder containing all lecture slides</li>
+
+                    </ul>
 
                 </ul>
+                <br>
                 <a class="download-btn" href="{{ site.baseurl }}/downloads/workshop-04.zip" download>
                     ⬇ Download Workshop 4 Materials
                 </a>
@@ -68,9 +82,15 @@ nav: workshops
        ===================== -->
         <section class="workshop-steps">
             <h2>Workshop Steps</h2>
+
+            <p>This workhop is hosted on Google Colab and can be accessed <a href="https://github.com/mulqueenr/DSWG_MethylationWorkshop/blob/main/DSWG_Methylation.ipynb">here.</a></p>
             <ol>
 
-                <li>{{ step }}</li>
+                <li>Follow link above then click this button at top of <i>DSWG_Methylation.ipynb</i>:</li>
+                <img src="../assets/colab_button.png">
+
+                <li>Follow along in Google Colab notebook</li>
+                
 
             </ol>
         </section>

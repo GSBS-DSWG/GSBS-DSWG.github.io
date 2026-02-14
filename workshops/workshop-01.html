@@ -28,9 +28,18 @@ nav: workshops
        ===================== -->
         <section class="workshop-overview">
             <h2>Overview</h2>
-            <p><strong>Date:</strong> Month DD, 2025</p>
+            
+            <h3>Lecture</h3>            
+            <p><strong>Date:</strong> October 28, 2024</p>
             <p><strong>Instructor:</strong> Dr. Anna Casasent</p>
-            <p>Learn the basics of analyzing single-cell RNA-sequencing data.</p>
+            <p>From Bench to Bioinformatics: single-cell resources and strategies.</p>
+
+            <p><br></p>
+
+            <h3>Workshop</h3>
+            <p><strong>Date:</strong> December 02, 2024</p>
+            <p><strong>Instructor:</strong> Dr. Anna Casasent</p>
+            <p>Single-cell Integration Workshop.</p>
         </section>
 
         <!-- =====================
@@ -55,9 +64,18 @@ nav: workshops
             <div class="download-box">
                 <ul>
 
-                    <li><strong>{{ file.name }}:</strong> {{ file.description }}</li>
+                    <li><strong>workshop-01.zip:</strong> compressed folder containing all workshop content.</li>
+                    <ul>
+                        <li><strong>README.docx</strong> document with instruction for installing required libraries
+                        </li>
+                        <li><strong>data/</strong> folder containing single-cell datasets</li>
+                        <li><strong>code/</strong> folder containing workshop R markdown and Rmd knitted html.</li>
+                        <li><strong>slides/</strong> folder containing lecture slides</li>
+
+                    </ul>
 
                 </ul>
+                <br>
                 <a class="download-btn" href="{{ site.baseurl }}/downloads/workshop-01.zip" download>
                     ⬇ Download Workshop 1 Materials
                 </a>
@@ -71,7 +89,11 @@ nav: workshops
             <h2>Workshop Steps</h2>
             <ol>
 
-                <li>{{ step }}</li>
+                <li>Download workshop materials above</li>
+                <li>Once downloaded, upzip contents</li>
+                <li>Read through lecture slides</li>
+                <li>Follow instructions in README to set up environment</li>
+                <li>Open <i>code/sc_integration_tutorial_short_20241201.Rmd</i> and follow along</li>
 
             </ol>
         </section>
