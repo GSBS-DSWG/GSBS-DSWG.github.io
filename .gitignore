@@ -1,1 +1,4 @@
 *.pptx
+
+/downloads/
+.DS_Store
