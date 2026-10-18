@@ -315,3 +315,105 @@ footer {
   width: 100%;
   height: 100%;
 }
+
+/* =====================
+   RESOURCES PAGE
+   ===================== */
+.resource-section {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.resource-section h2 {
+  margin-top: 0;
+}
+
+.resource-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.resource-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.resource-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.resource-list a {
+  text-decoration: none;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.resource-list a:hover {
+  text-decoration: underline;
+}
+
+.resource-desc {
+  margin: 0.25rem 0 0;
+  color: #444;
+}
+
+
+/* =====================
+   MAILING LIST SIGN-UP
+   ===================== */
+.signup-box {
+  background: #eef2ff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.signup-box h2 {
+  margin-top: 0;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-width: 400px;
+}
+
+.signup-form label {
+  font-weight: 600;
+}
+
+.signup-form input {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #c7d2fe;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  margin-bottom: 0.5rem;
+}
+
+.signup-form input:focus {
+  outline: 2px solid #2563eb;
+  border-color: #2563eb;
+}
+
+.signup-form button {
+  align-self: flex-start;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.signup-thanks {
+  font-weight: 600;
+  color: #166534;
+}
+
+[hidden] {
+  display: none !important;
+}

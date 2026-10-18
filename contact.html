@@ -29,7 +29,58 @@ nav: contact
                 GSBS.DSWG@uth.tmc.edu
             </a>
         </p>
+
+        <!--
+            MAILING LIST SIGN-UP (Google Forms)
+            Setup:
+            1. Create a Google Form with two short-answer questions: "Name" and "Email".
+            2. In the form editor, click ⋮ (top right) → "Get pre-filled link".
+               Type "NAME" and "EMAIL" into the fields, click "Get link", and copy it.
+            3. The copied link looks like:
+               https://docs.google.com/forms/d/e/FORM_ID/viewform?usp=pp_url&entry.111111=NAME&entry.222222=EMAIL
+               - Replace YOUR_FORM_ID below with the FORM_ID part.
+               - Replace entry.NAME_ID with the entry.<number> that came before =NAME.
+               - Replace entry.EMAIL_ID with the entry.<number> that came before =EMAIL.
+            4. Responses show up in the form's "Responses" tab (you can link them to a Google Sheet).
+        -->
+        <section class="signup-box">
+            <h2>Join Our Mailing List</h2>
+            <p>Get notified about upcoming workshops, lectures, and new materials.</p>
+
+            <form id="signup-form" class="signup-form"
+            
+                https://docs.google.com/forms/d/e/1FAIpQLSf0y-rfSlGrfeRBkAUC-79BKpl4RZFEqmRE1JkYZmR1tI5viw/viewform?usp=pp_url&=NAME&=EMAIL
+
+                  action="https://docs.google.com/forms/d/e/1FAIpQLSf0y-rfSlGrfeRBkAUC-79BKpl4RZFEqmRE1JkYZmR1tI5viw/formResponse"
+                  method="POST" target="signup-hidden-iframe">
+                <label for="signup-name">Name</label>
+                <input type="text" id="signup-name" name="entry.282919016" required>
+
+                <label for="signup-email">Email</label>
+                <input type="email" id="signup-email" name="entry.1963101526" required>
+
+                <button type="submit" class="download-btn">Sign Up</button>
+            </form>
+
+            <p id="signup-thanks" class="signup-thanks" hidden>
+                Thanks for signing up! You've been added to our mailing list.
+            </p>
+
+            <!-- Submissions load in this hidden frame so visitors stay on this page -->
+            <iframe name="signup-hidden-iframe" id="signup-hidden-iframe" hidden></iframe>
+        </section>
     </main>
+
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', function () {
+            var form = this;
+            // Show the thank-you message once the submission has been sent
+            document.getElementById('signup-hidden-iframe').addEventListener('load', function () {
+                form.hidden = true;
+                document.getElementById('signup-thanks').hidden = false;
+            }, { once: true });
+        });
+    </script>
 
     <footer>
         <hr class="fancy-hr">

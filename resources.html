@@ -1,0 +1,102 @@
+---
+nav: resources
+---
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Resources</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="icon" type="image/png" href="assets/dna_icon1.png">
+</head>
+
+<body>
+
+    {% include navbar.html %}
+
+    <header>
+        <h1>Resources</h1>
+        <p>Helpful links for learning data science and computational biology</p>
+    </header>
+
+    <main class="container">
+
+        <!--
+            HOW TO ADD RESOURCES
+            - Each <section class="resource-section"> is a category. Copy a whole section to add a new category.
+            - Each <li> inside a .resource-list is one link. Copy an <li> block to add another link.
+            - The <p class="resource-desc"> line is optional; delete it if you don't want a description.
+            - target="_blank" opens external links in a new tab.
+        -->
+
+        <!-- ===== CATEGORY: Programming ===== -->
+        <section class="resource-section">
+            <h2>Programming</h2>
+            <ul class="resource-list">
+                <li>
+                    <a href="https://software-carpentry.org/lessons/index.html" target="_blank" rel="noopener">Software Carpentry</a>
+                    <p class="resource-desc">Workshops on fundamental programming skills needed for research</p>
+                </li>
+                
+            </ul>
+        </section>
+
+        <!-- ===== CATEGORY: HPC ===== -->
+        <section class="resource-section">
+            <h2>HPC Use</h2>
+            <ul class="resource-list">
+                <li>
+                    <a href="https://tacc.utexas.edu/use-tacc/training/" target="_blank" rel="noopener">TACC Training Resources</a>
+                    <p class="resource-desc">Training resources provided by Texas Advanced Computing Center</p>
+                </li>
+                <li>
+                    <a href="https://introtolinuxhpc.readthedocs.io/en/latest/ target="_blank" rel="noopener">Introduction to Linux and HPC</a>
+                    <p class="resource-desc">Workshop on foundational computing skills needed for scientific research</p>
+                </li>
+            </ul>
+        </section>
+
+        <!-- ===== CATEGORY: Statistics ===== -->
+        <!-- <section class="resource-section">
+            <h2>Statistics</h2>
+            <ul class="resource-list">
+                <li>
+                    <a href="https://example.com" target="_blank" rel="noopener">Resource Title</a>
+                    <p class="resource-desc">Short description of what this resource is and why it's useful.</p>
+                </li>
+            </ul>
+        </section> -->
+
+        <!-- ===== CATEGORY: Genomics & Bioinformatics ===== -->
+        <!-- <section class="resource-section">
+            <h2>Genomics &amp; Bioinformatics</h2>
+            <ul class="resource-list">
+                <li>
+                    <a href="https://example.com" target="_blank" rel="noopener">Resource Title</a>
+                    <p class="resource-desc">Short description of what this resource is and why it's useful.</p>
+                </li>
+            </ul>
+        </section> -->
+
+        <!-- ===== CATEGORY: Datasets & Databases ===== -->
+        <!-- <section class="resource-section">
+            <h2>Datasets &amp; Databases</h2>
+            <ul class="resource-list">
+                <li>
+                    <a href="https://example.com" target="_blank" rel="noopener">Resource Title</a>
+                    <p class="resource-desc">Short description of what this resource is and why it's useful.</p>
+                </li>
+            </ul>
+        </section> -->
+
+    </main>
+
+    <footer>
+        <hr class="fancy-hr">
+        <p>© 2026 • G&E Data Science Working Group</p>
+    </footer>
+
+</body>
+
+</html>
